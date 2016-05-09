@@ -3,6 +3,7 @@ package workshop;
 import java.awt.Color;
 import java.util.Random;
 
+import jv.geom.PgEdgeStar;
 import jv.geom.PgElementSet;
 import jv.project.PgGeometry;
 import jv.vecmath.PdVector;
@@ -134,7 +135,7 @@ public class MyWorkshop extends PjWorkshop {
 		double mean = sum/numOfElems;
 		double stddev;
 		for(int j = 0; j < numOfElems; j++){
-			stddev += Math.pow(regs[i] - mean, 2);
+			stddev += Math.pow(regs[j] - mean, 2);
 		}
 		stddev = Math.sqrt(stddev/numOfElems);
 		shapeRegularities = regs;
@@ -142,6 +143,39 @@ public class MyWorkshop extends PjWorkshop {
 		results[0] = minShapeReg;
 		results[1] = maxShapeReg;
 		results[2] = mean;
+		results[3] = stddev;
+		return results;
+	}
+	
+	public double[] calcValence(){
+		// Valence of vertex: amount of adjacent edges.
+		int amtEdges = m_geom.getNumEdges();
+		int[] valences = new int[m_geom.getNumVertices()];
+		double sum = 0;
+		for(int i = 0; i < amtEdges; i++){
+			PgEdgeStar vector = m_geom.getEdgeStar(i);
+			valences[vector.getVertexInd(0)]++;
+			valences[vector.getVertexInd(1)]++;
+			sum = sum + 2.0;
+		}
+		double avgValence = sum/m_geom.getNumVertices();
+		double stddev = 0.0;
+		int min_valence = Integer.MAX_VALUE;
+		int max_valence = Integer.MIN_VALUE;
+		for(int j = 0; j < valences.length; j++){
+			stddev += Math.pow(valences[j] - avgValence, 2);
+			if(valences[j] < min_valence){
+				min_valence = valences[j];
+			}
+			if(valences[j] > max_valence){
+				max_valence = valences[j];
+			}
+		}
+		stddev = Math.sqrt(stddev/m_geom.getNumVertices());
+		double[] results = new double[4];
+		results[0] = avgValence;
+		results[1] = min_valence;
+		results[2] = max_valence;
 		results[3] = stddev;
 		return results;
 	}
