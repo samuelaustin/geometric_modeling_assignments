@@ -92,6 +92,7 @@ public class MyWorkshop extends PjWorkshop {
 		double sum = 0.0;
 		for(int i = 0; i < numOfElems; i++){
 			PiVector indices = m_geom.getElement(i);
+			System.out.println(indices.m_data.length); // Should be 3.
 			PdVector x = m_geom.getVertex(indices.m_data[0]);
 			PdVector y = m_geom.getVertex(indices.m_data[1]);
 			PdVector z = m_geom.getVertex(indices.m_data[2]);
