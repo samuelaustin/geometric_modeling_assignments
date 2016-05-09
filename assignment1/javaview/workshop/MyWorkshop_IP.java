@@ -3,6 +3,7 @@ package workshop;
 import java.awt.Button;
 import java.awt.FlowLayout;
 import java.awt.Panel;
+import java.awt.Label;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -19,6 +20,9 @@ public class MyWorkshop_IP extends PjWorkshop_IP implements ActionListener {
 	protected Button m_bMakeRandomElementColors;
 	protected Button m_bMakeRandomVertexColors;
 	protected PuDouble m_xOff;
+
+	protected Button m_calculateGenusButton;
+	protected Label m_genusLabel;
 	
 	MyWorkshop m_ws;
 	
@@ -57,6 +61,13 @@ public class MyWorkshop_IP extends PjWorkshop_IP implements ActionListener {
 		m_xOff.addUpdateListener(this);
 		m_xOff.init();
 		add(m_xOff.getInfoPanel());
+
+		m_calculateGenusButton = new Button("Calculate Genus");
+		m_calculateGenusButton.addActionListener(this);
+		add(m_calculateGenusButton, FlowLayout.CENTER);
+
+		m_genusLabel = new Label("Genus: ?");
+		add(m_genusLabel, FlowLayout.CENTER);
 		
 		validate();
 	}
@@ -85,6 +96,11 @@ public class MyWorkshop_IP extends PjWorkshop_IP implements ActionListener {
 			m_ws.makeRandomVertexColors();
 			m_ws.m_geom.update(m_ws.m_geom);
 			return;
+		}
+		else if (source == m_calculateGenusButton)
+		{
+			int genus = m_ws.calcGenus();
+			m_genusLabel.setText("Genus: " + genus);
 		}
 	}
 	/**
