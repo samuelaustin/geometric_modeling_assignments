@@ -140,12 +140,12 @@ public class MyWorkshop extends PjWorkshop {
 			double b = PdVector.dist(vect1, vect3);
 			double area = 0.5*a*b*Math.sin(Math.toRadians(angle));
 
-			double divisor = 0.5 * (a + b + c);
-			double radiusInner = area/divisor;
-
-			double abc = a*b*c;
-			double divisor2 = Math.sqrt((a+b+c)*(b+c-a)*(c+a-b)*(a+b-c));
-			double radiusOuter = abc/divisor2;
+			double perimeter = a+b+c;
+			double radiusInner = (2*area)/perimeter;
+			
+			double sinalpha = Math.sin(Math.toRadians(angle));
+			double d = c/sinalpha;
+			double radiusOuter = d/2.0;
 			
 			double reg = radiusInner/radiusOuter;
 			sum += reg;
