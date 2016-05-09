@@ -77,4 +77,15 @@ public class MyWorkshop extends PjWorkshop {
 			m_geom.setVertex(i, v);
 		}
 	}
+	
+	public void calcGenus(){
+		int nov = m_geom.getNumVertices();
+		int noe = m_geom.getNumEdges();
+		int nof = m_geom.getNumElements();
+		int var = nov - noe + nof;
+		int halfvar = var/2;
+		// Halfvar = 1 - g -> g + halfvar = 1 -> g = 1 - halfvar.
+		int genus = 1 - halfvar;
+		
+	}
 }
