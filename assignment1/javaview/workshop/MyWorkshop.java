@@ -88,4 +88,33 @@ public class MyWorkshop extends PjWorkshop {
 		return 1 - halfvar;
 		
 	}
+	
+	public double calcVolume(){
+		int numOfElems = m_geom.getNumElements();
+		double sum = 0.0;
+		for(int i = 0; i < numOfElems; i++){
+			PiVector indices = m_geom.getElement(i);
+			System.out.println(indices.m_data.length); // Should be 3.
+			PdVector x = m_geom.getVertex(indices.m_data[0]);
+			PdVector y = m_geom.getVertex(indices.m_data[1]);
+			PdVector z = m_geom.getVertex(indices.m_data[2]);
+			sum = sum + (dotProduct(x, crossProduct(y, z))/6.0);
+		}
+		return Math.abs(sum);
+	}
+	
+	private double dotProduct(PdVector x, PdVector y){
+		return ((x.getEntry(0) * y.getEntry(0)) + (x.getEntry(1) * y.getEntry(1)) + (x.getEntry(2) * y.getEntry(2)));
+	}
+	
+	private PdVector crossProduct(PdVector x, PdVector y){
+		PdVector res = new PdVector(3);
+		double x = ((x.getEntry(1) * y.getEntry(2)) - (x.getEntry(2) * y.getEntry(1)));
+		double y = ((x.getEntry(2) * y.getEntry(0)) - (x.getEntry(0) * y.getEntry(2)));
+		double z = ((x.getEntry(0) * y.getEntry(1)) - (x.getEntry(1) * y.getEntry(0)));
+		res.setEntry(0, x);
+		res.setEntry(1, y);
+		res.setEntry(2, z);
+		return res;
+	}
 }
