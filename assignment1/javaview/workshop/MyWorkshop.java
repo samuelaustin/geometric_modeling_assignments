@@ -105,7 +105,7 @@ public class MyWorkshop extends PjWorkshop {
 	public double[] calcShapeReg(){
 		double minShapeReg = Double.MAX_VALUE;
 		double maxShapeReg = Double.MIN_VALUE;
-		double sum;
+		double sum = 0.0;
 		int numOfElems = m_geom.getNumElements();
 		double[] regs = new double[numOfElems];
 		for(int i = 0; i < numOfElems; i++){
@@ -133,7 +133,7 @@ public class MyWorkshop extends PjWorkshop {
 			regs[i] = reg;
 		}
 		double mean = sum/numOfElems;
-		double stddev;
+		double stddev = 0.0;
 		for(int j = 0; j < numOfElems; j++){
 			stddev += Math.pow(regs[j] - mean, 2);
 		}
@@ -197,9 +197,9 @@ public class MyWorkshop extends PjWorkshop {
 	
 	private double distance(PdVector x, PdVector y){
 		return Math.sqrt((
-				Math.pow((x.getEntry(0) - y.getEntry(0),2)) + 
-				Math.pow((x.getEntry(1) - y.getEntry(1),2)) +
-				Math.pow((x.getEntry(2) - y.getEntry(2),2))
+				Math.pow((x.getEntry(0) - y.getEntry(0)),2) + 
+				Math.pow((x.getEntry(1) - y.getEntry(1)),2) +
+				Math.pow((x.getEntry(2) - y.getEntry(2)),2)
 				));
 	}
 }
