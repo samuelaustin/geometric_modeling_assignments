@@ -77,7 +77,7 @@ public class MyWorkshop extends PjWorkshop {
 		
 			for(int i=0; i<noe; i++){
 				//System.out.println("ShapeReg: " + shapeRegularities[i]);
-				color = Color.getHSBColor((float) (100 *shapeRegularities[i]), 1.0f, 1.0f);
+				color = Color.getHSBColor( 1.0f, 0.0f, (float) (100 *shapeRegularities[i]));
 				//color = Color.getHSBColor(1.0f, (float) shapeRegularities[i], 1.0f );
 				//new Color(rand.nextFloat(), rand.nextFloat(), rand.nextFloat());
 				m_geom.setElementColor(i, color);
@@ -138,11 +138,11 @@ public class MyWorkshop extends PjWorkshop {
 			double a = PdVector.dist(vect1, vect2);
 			double c = PdVector.dist(vect2, vect3);
 			double b = PdVector.dist(vect1, vect3);
-			double area = 0.5*a*b*Math.sin(Math.toRadians(angle));
+			double area = PdVector.area(vect1, vect2, vect3);
 
 			double perimeter = a+b+c;
 			double radiusInner = (2*area)/perimeter;
-			
+
 			double sinalpha = Math.sin(Math.toRadians(angle));
 			double d = c/sinalpha;
 			double radiusOuter = d/2.0;
