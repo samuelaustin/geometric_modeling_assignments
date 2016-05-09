@@ -26,6 +26,8 @@ public class MyWorkshop_IP extends PjWorkshop_IP implements ActionListener {
 
 	protected Button m_volumeButton;
 	protected Label m_volumeLabel;
+
+	protected Button m_shapeRegButton;
 	
 	MyWorkshop m_ws;
 	
@@ -76,6 +78,10 @@ public class MyWorkshop_IP extends PjWorkshop_IP implements ActionListener {
 		add(m_volumeButton, FlowLayout.CENTER);
 		m_volumeLabel = new Label("Volume: ?");
 		add(m_volumeLabel, FlowLayout.CENTER);
+
+		m_shapeRegButton = new Button("Calculate Shape Regularity");
+		m_shapeRegButton.addActionListener(this);
+		add(m_shapeRegButton, FlowLayout.CENTER);
 		
 		validate();
 	}
@@ -114,6 +120,13 @@ public class MyWorkshop_IP extends PjWorkshop_IP implements ActionListener {
 		{
 			double volume = m_ws.calcVolume();
 			m_volumeLabel.setText("Volume: " + volume);
+		}
+		else if (source == m_shapeRegButton)
+		{
+			System.out.println("Calculating Shape Reg");
+			double[] stats = m_ws.calcShapeReg();
+			m_ws.makeRegularityElementColors();
+			m_ws.m_geom.update(m_ws.m_geom);
 		}
 	}
 	/**
