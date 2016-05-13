@@ -63,7 +63,7 @@ public class Registration extends PjWorkshop {
 		m_surfQ = surfQ;
 	}
 	
-	public void iterativeClosestPoint(){
+	public void iterativeClosestPoint(boolean pointtoplane){
 		// Choose random amount of vertices from P.
 		int n = Math.min(m_surfP.getNumVertices(), 200);
 		Random r = new Random(System.currentTimeMillis());
@@ -81,7 +81,12 @@ public class Registration extends PjWorkshop {
 		}
 		
 		// Calculate min. distance between this set and points of Q.
-		HashMap<PdVector, PdVector> corresponding = GetClosestPointToPointDistances(vectors, m_surfQ);
+		if(pointtoplane){
+			HashMap<PdVector, PdVector> corresponding = GetClosestPointToPlaneDistances(vectors, m_surfQ);
+		}
+		else {
+			HashMap<PdVector, PdVector> corresponding = GetClosestPointToPointDistances(vectors, m_surfQ);
+		}
 		
 		// Compute centroid of P and Q.
 		PdVector pCentroid = computeCentroid(corresponding.keySet());
