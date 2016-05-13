@@ -64,6 +64,13 @@ public class Registration extends PjWorkshop {
 	}
 	
 	public void iterativeClosestPoint(){
+
+		if(m_surfP == null || m_surfQ == null)
+		{
+			System.out.println("Surfaces have not been set.");
+			return;
+		}
+
 		// Choose random amount of vertices from P.
 		int n = Math.min(m_surfP.getNumVertices(), 200);
 		Random r = new Random(System.currentTimeMillis());
@@ -240,8 +247,13 @@ public class Registration extends PjWorkshop {
 	
 	private void rotateAndTranslate(PgElementSet set, PdMatrix r, PdVector t)
 	{
+		System.out.println("Rotating and translating");
+		System.out.println(r);
+		System.out.println(t);
 		for(int i = 0; i < set.getNumVertices(); i++){
-			set.setVertex(i, PdVector.addNew(matrixMult(r, set.getElement(i)), t));
+			PdVector old = set.getVertex(i);
+			set.setVertex(i, PdVector.addNew(matrixMult(r, old), t));
 		}
+		m_surfP.update(m_surfP);
 	}
 }
