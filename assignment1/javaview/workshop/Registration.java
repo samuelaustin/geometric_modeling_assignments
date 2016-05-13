@@ -87,11 +87,12 @@ public class Registration extends PjWorkshop {
 		}
 		
 		// Calculate min. distance between this set and points of Q.
+		HashMap<PdVector, PdVector> corresponding = new HashMap<PdVector, PdVector>();
 		if(pointtoplane){
-			HashMap<PdVector, PdVector> corresponding = GetClosestPointToPlaneDistances(vectors, m_surfQ);
+			corresponding = GetClosestPointToPlaneDistances(vectors, m_surfQ);
 		}
 		else {
-			HashMap<PdVector, PdVector> corresponding = GetClosestPointToPointDistances(vectors, m_surfQ);
+			corresponding = GetClosestPointToPointDistances(vectors, m_surfQ);
 		}
 		
 		// Compute centroid of P and Q.
@@ -179,7 +180,8 @@ public class Registration extends PjWorkshop {
 		double meanDist = 0.0;
 
 		PdVector[] vectorsOfQ = surface.getVertices();
-		PdVector[] normalsOfQ = surface.getElementNormals();
+		surface.makeVertexNormals();
+		PdVector[] normalsOfQ = surface.getVertexNormals();
 
 		for(int j = 0; j < vectors.length; j++){
 			double minDist = Double.MAX_VALUE;
@@ -189,7 +191,7 @@ public class Registration extends PjWorkshop {
 				PdVector projectionOntoNormal = GetProjectionPOntoQ(point, normalsOfQ[j2]);
 				double dist = projectionOntoNormal.dot(projectionOntoNormal);
 				if(dist < minDist){
-					minDist = PdVector.dist(vectors[j], vectorsOfQ[j2]);
+					minDist = dist;
 					closestPoint = vectorsOfQ[j2];
 				}
 			}
@@ -244,7 +246,7 @@ public class Registration extends PjWorkshop {
 	
 	private PdVector GetProjectionPOntoQ(PdVector p, PdVector q)
 	{
-		PdVector result = (PdVector) q.clone();
+		PdVector result = new PdVector(q.m_data);
 		result.multScalar(p.dot(q) / q.dot(q));
 		return result;
 	}

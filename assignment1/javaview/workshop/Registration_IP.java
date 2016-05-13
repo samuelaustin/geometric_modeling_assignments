@@ -9,6 +9,8 @@ import java.awt.List;
 import java.awt.Panel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.CheckboxGroup;
+import java.awt.Checkbox;
 import java.util.Vector;
 
 import jv.geom.PgElementSet;
@@ -34,6 +36,9 @@ public class Registration_IP extends PjWorkshop_IP implements ActionListener{
 	protected   Button			m_bSetSurfaces;
 
 	protected   Button			m_itClosestPointButton;
+	protected	CheckboxGroup 	m_pointOrPlaneRadioButton;
+	protected	Checkbox 		m_point;
+	protected	Checkbox 		m_plane;
 
 	/** Constructor */
 	public Registration_IP () {
@@ -86,7 +91,12 @@ public class Registration_IP extends PjWorkshop_IP implements ActionListener{
 		m_itClosestPointButton = new Button("Iterative closest point");
 		m_itClosestPointButton.addActionListener(this);
 		add(m_itClosestPointButton);
-		
+		m_pointOrPlaneRadioButton = new CheckboxGroup();
+		m_point = new Checkbox("Point to point", m_pointOrPlaneRadioButton, true);
+        m_plane = new Checkbox("Point to plane", m_pointOrPlaneRadioButton, false);
+        add(m_point);
+        add(m_plane);
+
 		updateGeomList();
 		validate();
 	}
@@ -136,7 +146,7 @@ public class Registration_IP extends PjWorkshop_IP implements ActionListener{
 		}
 		else if(source == m_itClosestPointButton)
 		{
-			m_registration.iterativeClosestPoint();
+			m_registration.iterativeClosestPoint(m_plane.getState());
 		}
 	}
 	/**
