@@ -108,7 +108,9 @@ public class Registration extends PjWorkshop {
 		inter[2][2] = PnMatrix.determinant(vut.m_data, 3);
 		RealMatrix rOptInter = svd.getV().multiply(new Array2DRowRealMatrix(inter).multiply(svd.getUT()));
 		PdMatrix rOpt = new PdMatrix(rOptInter.getData());
-		PdVector tOpt = PdVector.subNew(qCentroid, matrixMult(rOpt, pCentroid));	
+		PdVector tOpt = PdVector.subNew(qCentroid, matrixMult(rOpt, pCentroid));
+		
+		rotateAndTranslate(m_surfP, rOpt, tOpt);
 	}
 	
 	private PdVector computeCentroid(Collection<PdVector> vectors){
@@ -234,5 +236,12 @@ public class Registration extends PjWorkshop {
 		PdVector result = (PdVector) q.clone();
 		result.multScalar(p.dot(q) / q.dot(q));
 		return result;
+	}
+	
+	private void rotateAndTranslate(PgElementSet set, PdMatrix r, PdVector t)
+	{
+		for(int i = 0; i < set.getNumVertices(); i++){
+			set.setVertex(i, PdVector.addNew(matrixMult(r, set.getElement(i)), t));
+		}
 	}
 }
