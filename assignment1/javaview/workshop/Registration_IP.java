@@ -33,6 +33,8 @@ public class Registration_IP extends PjWorkshop_IP implements ActionListener{
 	protected	Registration	m_registration;
 	protected   Button			m_bSetSurfaces;
 
+	protected   Button			m_itClosestPointButton;
+
 	/** Constructor */
 	public Registration_IP () {
 		super();
@@ -80,6 +82,10 @@ public class Registration_IP extends PjWorkshop_IP implements ActionListener{
 		m_bSetSurfaces.addActionListener(this);
 		pSetSurfaces.add(m_bSetSurfaces, BorderLayout.CENTER);
 		add(pSetSurfaces);
+
+		m_itClosestPointButton = new Button("Iterative closest point");
+		m_itClosestPointButton.addActionListener(this);
+		add(m_itClosestPointButton);
 		
 		updateGeomList();
 		validate();
@@ -127,6 +133,10 @@ public class Registration_IP extends PjWorkshop_IP implements ActionListener{
 			m_registration.setGeometries((PgElementSet)m_geomList.elementAt(m_listActive.getSelectedIndex()),
 			(PgElementSet)m_geomList.elementAt(m_listPassive.getSelectedIndex()));
 			return;
+		}
+		else if(source == m_itClosestPointButton)
+		{
+			m_registration.iterativeClosestPoint();
 		}
 	}
 	/**
