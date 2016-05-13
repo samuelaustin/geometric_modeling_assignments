@@ -177,8 +177,13 @@ public class MyWorkshop extends PjWorkshop {
 		int amtEdges = m_geom.getNumEdges();
 		int[] valences = new int[m_geom.getNumVertices()];
 		double sum = 0;
-		for(int i = 0; i < amtEdges; i++){
-			PgEdgeStar vector = m_geom.getEdgeStar(i);
+		PgEdgeStar[] edges = m_geom.makeEdgeStars();
+
+		System.out.println("amtEdges: " + amtEdges);
+		System.out.println("edges.length: " + edges.length);
+
+		for(int i = 0; i < edges.length; i++){
+			PgEdgeStar vector = edges[i];
 			valences[vector.getVertexInd(0)]++;
 			valences[vector.getVertexInd(1)]++;
 			sum = sum + 2.0;
@@ -198,9 +203,9 @@ public class MyWorkshop extends PjWorkshop {
 		}
 		stddev = Math.sqrt(stddev/m_geom.getNumVertices());
 		double[] results = new double[4];
-		results[0] = avgValence;
-		results[1] = min_valence;
-		results[2] = max_valence;
+		results[0] = min_valence;
+		results[1] = max_valence;
+		results[2] = avgValence;
 		results[3] = stddev;
 		return results;
 	}

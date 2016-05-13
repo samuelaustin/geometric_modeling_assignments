@@ -28,6 +28,16 @@ public class MyWorkshop_IP extends PjWorkshop_IP implements ActionListener {
 	protected Label m_volumeLabel;
 
 	protected Button m_shapeRegButton;
+	protected Label m_minShapeRegLabel;
+	protected Label m_maxShapeRegLabel;
+	protected Label m_meanShapeRegLabel;
+	protected Label m_devShapeRegLabel;
+
+	protected Button m_valenceButton;
+	protected Label m_minValenceLabel;
+	protected Label m_maxValenceLabel;
+	protected Label m_meanValenceLabel;
+	protected Label m_devValenceLabel;
 	
 	MyWorkshop m_ws;
 	
@@ -82,6 +92,26 @@ public class MyWorkshop_IP extends PjWorkshop_IP implements ActionListener {
 		m_shapeRegButton = new Button("Calculate Shape Regularity");
 		m_shapeRegButton.addActionListener(this);
 		add(m_shapeRegButton, FlowLayout.CENTER);
+		m_minShapeRegLabel = new Label("Min shape regularity: ?");
+		add(m_minShapeRegLabel, FlowLayout.CENTER);
+		m_maxShapeRegLabel = new Label("Max shape regularity: ?");
+		add(m_maxShapeRegLabel, FlowLayout.CENTER);
+		m_meanShapeRegLabel = new Label("Average shape regularity: ?");
+		add(m_meanShapeRegLabel, FlowLayout.CENTER);
+		m_devShapeRegLabel = new Label("Standard deviation shape regularity: ?");
+		add(m_devShapeRegLabel, FlowLayout.CENTER);
+
+		m_valenceButton = new Button("Calculate Valence");
+		m_valenceButton.addActionListener(this);
+		add(m_valenceButton, FlowLayout.CENTER);
+		m_minValenceLabel = new Label("Min valence: ?");
+		add(m_minValenceLabel, FlowLayout.CENTER);
+		m_maxValenceLabel = new Label("Max valence: ?");
+		add(m_maxValenceLabel, FlowLayout.CENTER);
+		m_meanValenceLabel = new Label("Average valence: ?");
+		add(m_meanValenceLabel, FlowLayout.CENTER);
+		m_devValenceLabel = new Label("Standard deviation valence: ?");
+		add(m_devValenceLabel, FlowLayout.CENTER);
 		
 		validate();
 	}
@@ -127,6 +157,19 @@ public class MyWorkshop_IP extends PjWorkshop_IP implements ActionListener {
 			double[] stats = m_ws.calcShapeReg();
 			m_ws.makeRegularityElementColors();
 			m_ws.m_geom.update(m_ws.m_geom);
+
+			m_minShapeRegLabel.setText("Min shape regularity: " + stats[0]);
+			m_maxShapeRegLabel.setText("Max shape regularity: " + stats[1]);
+			m_meanShapeRegLabel.setText("Average shape regularity: " + stats[2]);
+			m_devShapeRegLabel.setText("Standard deviation shape regularity: " + stats[3]);
+		}
+		else if (source == m_valenceButton)
+		{
+			double[] stats = m_ws.calcValence();
+			m_minValenceLabel.setText("Min valence: " + stats[0]);
+			m_maxValenceLabel.setText("Max valence: " + stats[1]);
+			m_meanValenceLabel.setText("Average valence: " + stats[2]);
+			m_devValenceLabel.setText("Standard deviation valence: " + stats[3]);
 		}
 	}
 	/**
