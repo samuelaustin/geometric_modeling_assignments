@@ -211,49 +211,4 @@ public class MyWorkshop extends PjWorkshop {
 		results[3] = stddev;
 		return results;
 	}
-	
-	public void iterativeClosestPoint(PgGeometry p, PgGeometry q){
-		
-		// Choose random amount of vertices from P.
-		int n = min(p.getNumVertices(), 200);
-		Random r = new Random(System.currentTimeMillis());
-		PdVector[] vectors;
-		boolean[] used = new boolean[p.getNumVertices];
-		ArrayList<PdVector> allVectors = new ArrayList<PdVector>(p.getVertices());
-		if(n = p.getNumVertices()){
-			vectors = p.getVertices();
-		} else {
-			vectors = new PdVector[n];
-			for(int i = 0; i < n; i++){
-				int next = r.next(allVectors.size());
-				vectors[i] = allVectors.remove(next);
-			}
-		}
-		
-		// Calculate min. distance between this set and points of Q.
-		HashMap<PdVector, Double> results = new HashMap<PdVector, Double>();
-		double meanDist = 0.0;
-		for(int j = 0; j < n; j++){
-			double dist = Double.MAX_VALUE;
-			PdVector[] vectorsOfQ = q.getVertices();
-			for(int j2 = 0; j2 < vectorsOfQ.length; j2++){
-				if(PdVector.dist(vectors[j], vectorsOfQ[j2]) < dist){
-					dist = PdVector.dist(vectors[j], vectorsOfQ[j2]);
-				}
-			}
-			meanDist += dist;
-			results.put(vectors[j], dist);
-		}
-		meanDist = meanDist/n;
-		
-		// Remove all vectors with distance greater than k*meanDist.
-		double k = 2.0;
-		for(PdVector v : results.keySet()) {
-			if(results.get(v) > k*meanDist){
-				results.remove(v);
-			}
-		}
-		
-		
-	}
 }
