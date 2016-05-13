@@ -81,6 +81,7 @@ public class Registration extends PjWorkshop {
 		}
 		
 		// Calculate min. distance between this set and points of Q.
+<<<<<<< Updated upstream
 		HashMap<PdVector, PdVector> corresponding = GetClosestPointToPointDistances(vectors, m_surfQ);
 		
 		// Compute centroid of P and Q.
@@ -108,7 +109,15 @@ public class Registration extends PjWorkshop {
 		inter[2][2] = PnMatrix.determinant(vut.m_data, 3);
 		RealMatrix rOptInter = svd.getV().multiply(new Array2DRowRealMatrix(inter).multiply(svd.getUT()));
 		PdMatrix rOpt = new PdMatrix(rOptInter.getData());
-		PdVector tOpt = PdVector.subNew(qCentroid, matrixMult(rOpt, pCentroid));	
+		PdVector tOpt = PdVector.subNew(qCentroid, matrixMult(rOpt, pCentroid));
+=======
+		HashMap<PdVector, PdVector> corresponding = GetClosestPointToPointDistances(PdVector[] vectors, PgElementSet m_surfQ);
+		
+		// Compute centroid of P and Q.
+		PdVector pCentroid = computeCentroid(corresponding.keySet());
+		PdVector qCentroid = computeCentroid(Arrays.asList(m_surfQ.getVertices()));
+>>>>>>> Stashed changes
+		
 	}
 	
 	private PdVector computeCentroid(Collection<PdVector> vectors){
@@ -231,7 +240,7 @@ public class Registration extends PjWorkshop {
 	
 	private PdVector GetProjectionPOntoQ(PdVector p, PdVector q)
 	{
-		PdVector result = (PdVector) q.clone();
+		PdVector result = q.clone();
 		result.multScalar(p.dot(q) / q.dot(q));
 		return result;
 	}
