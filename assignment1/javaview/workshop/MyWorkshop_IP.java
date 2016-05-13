@@ -153,7 +153,6 @@ public class MyWorkshop_IP extends PjWorkshop_IP implements ActionListener {
 		}
 		else if (source == m_shapeRegButton)
 		{
-			System.out.println("Calculating Shape Reg");
 			double[] stats = m_ws.calcShapeReg();
 			m_ws.makeRegularityElementColors();
 			m_ws.m_geom.update(m_ws.m_geom);

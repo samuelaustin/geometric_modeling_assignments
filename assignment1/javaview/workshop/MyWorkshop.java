@@ -76,12 +76,9 @@ public class MyWorkshop extends PjWorkshop {
 		{
 			m_geom.assureElementColors();
 			Color color;
-		
-			for(int i=0; i<noe; i++){
-				//System.out.println("ShapeReg: " + shapeRegularities[i]);
-				color = Color.getHSBColor( 1.0f, 0.0f, (float) (100 *shapeRegularities[i]));
-				//color = Color.getHSBColor(1.0f, (float) shapeRegularities[i], 1.0f );
-				//new Color(rand.nextFloat(), rand.nextFloat(), rand.nextFloat());
+			PiVector[] triangles = m_geom.getElements();
+			for(int i=0; i<triangles.length; i++){
+				color = Color.getHSBColor(1.0f, (float) (1.0 - shapeRegularities[i]), 1.0f );
 				m_geom.setElementColor(i, color);
 			}
 			m_geom.showElementColorFromVertices(false);
@@ -129,9 +126,10 @@ public class MyWorkshop extends PjWorkshop {
 		double maxShapeReg = Double.MIN_VALUE;
 		double sum = 0.0;
 		int numOfElems = m_geom.getNumElements();
-		double[] regs = new double[numOfElems];
-		for(int i = 0; i < numOfElems; i++){
-			PiVector triangle = m_geom.getElement(i);
+		PiVector[] triangles = m_geom.getElements();
+		double[] regs = new double[triangles.length];
+		for(int i = 0; i < triangles.length; i++){
+			PiVector triangle = triangles[i];
 			PdVector vect1 = m_geom.getVertex(triangle.m_data[0]);
 			PdVector vect2 = m_geom.getVertex(triangle.m_data[1]);
 			PdVector vect3 = m_geom.getVertex(triangle.m_data[2]);
@@ -180,9 +178,6 @@ public class MyWorkshop extends PjWorkshop {
 		int[] valences = new int[m_geom.getNumVertices()];
 		double sum = 0;
 		PgEdgeStar[] edges = m_geom.makeEdgeStars();
-
-		System.out.println("amtEdges: " + amtEdges);
-		System.out.println("edges.length: " + edges.length);
 
 		for(int i = 0; i < edges.length; i++){
 			PgEdgeStar vector = edges[i];
