@@ -71,7 +71,7 @@ public class Registration extends PjWorkshop {
 		}
 		
 		// Choose random amount of vertices from P.
-		int n = Math.min(m_surfP.getNumVertices(), 200);
+		int n = Math.min(m_surfP.getNumVertices(), 1000);
 		Random r = new Random(System.currentTimeMillis());
 		PdVector[] vectors;
 		boolean[] used = new boolean[m_surfP.getNumVertices()];
