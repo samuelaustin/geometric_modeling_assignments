@@ -251,8 +251,6 @@ public class Registration extends PjWorkshop {
 		return result;
 	}
 	
-	// foo.
-	
 	private void rotateAndTranslate(PgElementSet set, PdMatrix r, PdVector t)
 	{
 		System.out.println("Rotating and translating");
