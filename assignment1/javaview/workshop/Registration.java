@@ -72,7 +72,7 @@ public class Registration extends PjWorkshop {
 		}
 		
 		// Choose random amount of vertices from P.
-		int n = Math.min(m_surfP.getNumVertices(), 200);
+		int n = Math.min(m_surfP.getNumVertices(), 1000);
 		Random r = new Random(System.currentTimeMillis());
 		PdVector[] vectors;
 		boolean[] used = new boolean[m_surfP.getNumVertices()];
@@ -165,11 +165,10 @@ public class Registration extends PjWorkshop {
 		SingularValueDecomposition svd = new SingularValueDecomposition(realmatrix);
 				
 		double[][] inter = ones(3);
-				
-		RealMatrix uvt = svd.getU().multiply(svd.getVT());
-		PdMatrix vut = new PdMatrix(svd.getV().multiply(svd.getUT()).getData());
-		inter[2][2] = PnMatrix.determinant(uvt.getData(), 3);
-		RealMatrix rOptInter = svd.getV().multiply(new Array2DRowRealMatrix(inter).multiply(svd.getUT()));
+
+		PdMatrix uvt = new PdMatrix(svd.getU().multiply(svd.getVT()).getData());
+		inter[2][2] = PnMatrix.determinant(uvt.m_data, 3);
+		RealMatrix rOptInter = svd.getU().multiply(new Array2DRowRealMatrix(inter).multiply(svd.getVT()));
 		
 		R = new PdMatrix(rOptInter.getData());
 		
