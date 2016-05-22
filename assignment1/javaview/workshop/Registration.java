@@ -148,15 +148,23 @@ public class Registration extends PjWorkshop {
 		// Calculate x.
 		RealMatrix x = ATAinv.multiply(AT).multiply(b);
 		
-		// Calculate r and t.
-		double[] r_entries = {x.getEntry(0, 0), x.getEntry(1, 0), x.getEntry(2, 0)};
-		PdVector r = new PdVector(r_entries);
+		// Calculate R and t.
+		double r1 = x.getEntry(0, 0);
+		double r2 = x.getEntry(1, 0);
+		double r3 = x.getEntry(2, 0);
+		PdMatrix R = new PdMatrix(3);
+		R.setEntry(1, 0, r3);
+		R.setEntry(2, 0, -r2);
+		R.setEntry(0, 1, -r3);
+		R.setEntry(2, 1, r1);
+		R.setEntry(0, 2, r2);
+		R.setEntry(1, 2, -r1);
 		
 		double[] t_entries = {x.getEntry(3, 0), x.getEntry(4, 0), x.getEntry(5, 0)};
 		PdVector t = new PdVector(t_entries);
 		
 		// Update the mesh.
-		rotateAndTranslatePointToPlane(m_surfP, r, t);
+		rotateAndTranslate(m_surfP, R, t);
 	}
 	
 	public void pointToPoint(HashMap<PdVector, PdVector> corresponding) {
@@ -327,19 +335,6 @@ public class Registration extends PjWorkshop {
 		for(int i = 0; i < set.getNumVertices(); i++){
 			PdVector old = set.getVertex(i);
 			set.setVertex(i, PdVector.addNew(matrixMult(r, old), t));
-		}
-		m_surfP.update(m_surfP);
-	}
-	
-	private void rotateAndTranslatePointToPlane(PgElementSet set, PdVector r, PdVector t)
-	{
-		System.out.println("Rotating and translating");
-		
-		for(int i = 0; i < set.getNumVertices(); i++){
-			PdVector old = set.getVertex(i);
-			PdVector trans = PdVector.addNew(old, PdVector.crossNew(old, r));
-			trans = PdVector.addNew(trans, t);
-			set.setVertex(i, trans);
 		}
 		m_surfP.update(m_surfP);
 	}
