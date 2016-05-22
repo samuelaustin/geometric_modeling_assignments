@@ -160,6 +160,19 @@ public class Registration extends PjWorkshop {
 		R.setEntry(0, 2, r2);
 		R.setEntry(1, 2, -r1);
 		
+		// Compute SVD.
+		Array2DRowRealMatrix realmatrix = new Array2DRowRealMatrix(R.m_data);
+		SingularValueDecomposition svd = new SingularValueDecomposition(realmatrix);
+				
+		double[][] inter = ones(3);
+				
+		RealMatrix uvt = svd.getU().multiply(svd.getVT());
+		PdMatrix vut = new PdMatrix(svd.getV().multiply(svd.getUT()).getData());
+		inter[2][2] = PnMatrix.determinant(vut.m_data, 3);
+		RealMatrix rOptInter = svd.getV().multiply(new Array2DRowRealMatrix(inter).multiply(svd.getUT()));
+		
+		R = new PdMatrix(rOptInter.getData());
+		
 		double[] t_entries = {x.getEntry(3, 0), x.getEntry(4, 0), x.getEntry(5, 0)};
 		PdVector t = new PdVector(t_entries);
 		
