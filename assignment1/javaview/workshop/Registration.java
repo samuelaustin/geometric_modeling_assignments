@@ -168,7 +168,7 @@ public class Registration extends PjWorkshop {
 				
 		RealMatrix uvt = svd.getU().multiply(svd.getVT());
 		PdMatrix vut = new PdMatrix(svd.getV().multiply(svd.getUT()).getData());
-		inter[2][2] = PnMatrix.determinant(vut.m_data, 3);
+		inter[2][2] = PnMatrix.determinant(uvt.getData(), 3);
 		RealMatrix rOptInter = svd.getV().multiply(new Array2DRowRealMatrix(inter).multiply(svd.getUT()));
 		
 		R = new PdMatrix(rOptInter.getData());
