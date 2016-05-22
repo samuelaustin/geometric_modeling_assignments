@@ -149,15 +149,17 @@ public class Registration extends PjWorkshop {
 		RealMatrix x = ATAinv.multiply(AT).multiply(b);
 		
 		// Calculate r and t.
-		PdVector r = new PdVector();
-		r.set(0, x.getEntry(0, 0));
-		r.set(1, x.getEntry(1, 0));
-		r.set(2, x.getEntry(2, 0));
+		double[] r_data = new double[3];
+		r_data[0] = x.getEntry(0, 0);
+		r_data[1] = x.getEntry(1, 0);
+		r_data[2] = x.getEntry(2, 0);
+		PdVector r = new PdVector(r_data);
 		
-		PdVector t = new PdVector();
-		t.set(0, x.getEntry(3, 0));
-		t.set(1, x.getEntry(4, 0));
-		t.set(2, x.getEntry(5, 0));
+		double[] t_data = new double[3];
+		t_data[0] = x.getEntry(3, 0);
+		t_data[1] = x.getEntry(4, 0);
+		t_data[2] = x.getEntry(5, 0);
+		PdVector t = new PdVector(t_data);
 		
 		// Update the mesh.
 		rotateAndTranslatePointToPlane(m_surfP, r, t);
