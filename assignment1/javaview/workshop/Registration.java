@@ -72,7 +72,7 @@ public class Registration extends PjWorkshop {
 		}
 		
 		// Choose random amount of vertices from P.
-		int n = Math.min(m_surfP.getNumVertices(), 1000);
+		int n = Math.min(m_surfP.getNumVertices(), 200);
 		Random r = new Random(System.currentTimeMillis());
 		PdVector[] vectors;
 		boolean[] used = new boolean[m_surfP.getNumVertices()];
@@ -149,15 +149,11 @@ public class Registration extends PjWorkshop {
 		RealMatrix x = ATAinv.multiply(AT).multiply(b);
 		
 		// Calculate r and t.
-		PdVector r = new PdVector();
-		r.set(0, x.getEntry(0, 0));
-		r.set(1, x.getEntry(0, 1));
-		r.set(2, x.getEntry(0, 2));
+		double[] r_entries = {x.getEntry(0, 0), x.getEntry(1, 0), x.getEntry(2, 0)};
+		PdVector r = new PdVector(r_entries);
 		
-		PdVector t = new PdVector();
-		t.set(0, x.getEntry(0, 3));
-		t.set(1, x.getEntry(0, 4));
-		t.set(2, x.getEntry(0, 5));
+		double[] t_entries = {x.getEntry(3, 0), x.getEntry(4, 0), x.getEntry(5, 0)};
+		PdVector t = new PdVector(t_entries);
 		
 		// Update the mesh.
 		rotateAndTranslatePointToPlane(m_surfP, r, t);
@@ -273,7 +269,7 @@ public class Registration extends PjWorkshop {
 		}
 		meanDist = meanDist/vectors.length;
 
-		double k = 2.0;
+		double k = 5.0;
 		for(PdVector v : results.keySet()) {
 			if(results.get(v) > k*meanDist){
 				corresponding.remove(v);
@@ -311,7 +307,7 @@ public class Registration extends PjWorkshop {
 	private PdVector matrixMult(PdMatrix m, PdVector v){
 		double[] results = new double[3];
 		for(int i = 0; i < 3; i++){
-			results[i] = (m.getEntry(i, 0)*v.getEntry(0)) + (m.getEntry(i, 1)*v.getEntry(1)) + (m.getEntry(i, 2)*v.getEntry(2));
+			results[i] = (m.getEntry(0,i)*v.getEntry(0)) + (m.getEntry(1,i)*v.getEntry(1)) + (m.getEntry(2,i)*v.getEntry(2));
 		}
 		return new PdVector(results);
 	}
@@ -338,8 +334,7 @@ public class Registration extends PjWorkshop {
 	private void rotateAndTranslatePointToPlane(PgElementSet set, PdVector r, PdVector t)
 	{
 		System.out.println("Rotating and translating");
-		System.out.println(r);
-		System.out.println(t);
+		
 		for(int i = 0; i < set.getNumVertices(); i++){
 			PdVector old = set.getVertex(i);
 			PdVector trans = PdVector.addNew(old, PdVector.crossNew(old, r));
@@ -359,12 +354,12 @@ public class Registration extends PjWorkshop {
 			PdVector qi = results.keySet().iterator().next();
 			int indexOfNorm = results.get(qi);
 			PdVector crossRes = PdVector.crossNew(pi, normals[indexOfNorm]);
-			res.setEntry(i, 0, crossRes.getEntry(0));
-			res.setEntry(i, 1, crossRes.getEntry(1));
-			res.setEntry(i, 2, crossRes.getEntry(2));
-			res.setEntry(i, 3, pi.getEntry(0));
-			res.setEntry(i, 4, pi.getEntry(1));
-			res.setEntry(i, 5, pi.getEntry(2));
+			res.setEntry(i,0, crossRes.getEntry(0));
+			res.setEntry(i,1, crossRes.getEntry(1));
+			res.setEntry(i,2, crossRes.getEntry(2));
+			res.setEntry(i,3, pi.getEntry(0));
+			res.setEntry(i,4, pi.getEntry(1));
+			res.setEntry(i,5, pi.getEntry(2));
 			i++;
 		}
 		
@@ -386,7 +381,7 @@ public class Registration extends PjWorkshop {
 			diff.multScalar(-1.0);
 			
 			double entry = diff.dot(norm);
-			res.setEntry(i, 0, entry);
+			res.setEntry(i,0, entry);
 			i++;
 		}
 		

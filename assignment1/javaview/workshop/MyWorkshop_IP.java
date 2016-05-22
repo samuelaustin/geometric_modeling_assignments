@@ -49,7 +49,7 @@ public class MyWorkshop_IP extends PjWorkshop_IP implements ActionListener {
 	
 	public void init() {
 		super.init();
-		setTitle("My Workshop");
+		setTitle("Mesh analysis tools");
 	}
 	
 	public String getNotice() {
