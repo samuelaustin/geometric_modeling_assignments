@@ -151,13 +151,13 @@ public class Registration extends PjWorkshop {
 		// Calculate r and t.
 		PdVector r = new PdVector();
 		r.set(0, x.getEntry(0, 0));
-		r.set(1, x.getEntry(0, 1));
-		r.set(2, x.getEntry(0, 2));
+		r.set(1, x.getEntry(1, 0));
+		r.set(2, x.getEntry(2, 0));
 		
 		PdVector t = new PdVector();
-		t.set(0, x.getEntry(0, 3));
-		t.set(1, x.getEntry(0, 4));
-		t.set(2, x.getEntry(0, 5));
+		t.set(0, x.getEntry(3, 0));
+		t.set(1, x.getEntry(4, 0));
+		t.set(2, x.getEntry(5, 0));
 		
 		// Update the mesh.
 		rotateAndTranslatePointToPlane(m_surfP, r, t);
