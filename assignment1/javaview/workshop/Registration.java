@@ -415,9 +415,9 @@ public class Registration extends PjWorkshop {
 			PdMatrix g = computeTriangleMatrix(i, m_surfP.getElementNormals()[i]);
 			int[] indices = m_surfP.getElement(i).getEntries();
 			for(int j = 0; j < 3; j++){
-				res.setEntry(3*i, indices[j], g.getEntry(0, j));
-				res.setEntry(3*i + 1, indices[j], g.getEntry(1, j));
-				res.setEntry(3*i + 2, indices[j], g.getEntry(2, j));
+				res.addEntry(3*i, indices[j], g.getEntry(0, j));
+				res.addEntry(3*i + 1, indices[j], g.getEntry(1, j));
+				res.addEntry(3*i + 2, indices[j], g.getEntry(2, j));
 			}
 		}
 		
