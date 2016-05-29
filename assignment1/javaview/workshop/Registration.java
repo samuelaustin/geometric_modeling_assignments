@@ -447,9 +447,9 @@ public class Registration extends PjWorkshop {
 		double multiplier = 1.0/(2.0 * area);
 		PdMatrix res = new PdMatrix(3);
 		
-		res.setColumn(0, PdVector.crossNew(e1, normal));
-		res.setColumn(1, PdVector.crossNew(e2, normal));
-		res.setColumn(2, PdVector.crossNew(e3, normal));
+		res.setColumn(0, PdVector.crossNew(normal, e1));
+		res.setColumn(1, PdVector.crossNew(normal, e2));
+		res.setColumn(2, PdVector.crossNew(normal, e3));
 		
 		res.multScalar(multiplier);
 		
