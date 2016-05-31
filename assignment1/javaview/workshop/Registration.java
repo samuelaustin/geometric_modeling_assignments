@@ -33,6 +33,8 @@ import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
+
+import dev6.numeric.PnMumpsSolver;
 /**
  *  Workshop for surface registration
  */
@@ -408,16 +410,14 @@ public class Registration extends PjWorkshop {
 		int amtCols = m_surfP.getNumVertices();
 		PnSparseMatrix res = new PnSparseMatrix(amtRows, amtCols, 3);
 		
-		m_surfP.makeElementNormals();
-		
 		int amtTriangles = m_surfP.getNumElements();
 		for(int i = 0; i < amtTriangles; i++){
 			PdMatrix g = computeTriangleMatrix(i, m_surfP.getElementNormals()[i]);
 			int[] indices = m_surfP.getElement(i).getEntries();
 			for(int j = 0; j < 3; j++){
-				res.addEntry(3*i, indices[j], g.getEntry(0, j));
-				res.addEntry(3*i + 1, indices[j], g.getEntry(1, j));
-				res.addEntry(3*i + 2, indices[j], g.getEntry(2, j));
+				res.setEntry(3*i, indices[j], g.getEntry(0, j));
+				res.setEntry(3*i + 1, indices[j], g.getEntry(1, j));
+				res.setEntry(3*i + 2, indices[j], g.getEntry(2, j));
 			}
 		}
 		
@@ -436,23 +436,110 @@ public class Registration extends PjWorkshop {
 		PdVector e2 = PdVector.subNew(p1, p3);
 		PdVector e3 = PdVector.subNew(p2, p1);
 		
+		// Calculate area of the triangle.
+		double area = calculateArea(faceIndex);
+		
+		// Construct the matrix.
+		double multiplier = 1.0/(2.0 * area);
+		PdMatrix res = new PdMatrix(3);
+		
+		res.setColumn(0, PdVector.crossNew(e1, normal));
+		res.setColumn(1, PdVector.crossNew(e2, normal));
+		res.setColumn(2, PdVector.crossNew(e3, normal));
+		
+		res.multScalar(multiplier);
+		
+		return res;
+	}
+	
+	private double calculateArea(int faceIndex) {
+		int[] indicesOfVertices = m_surfP.getElement(faceIndex).getEntries();
+		// Get p1, p2 and p3.
+		PdVector p1 = m_surfP.getVertex(indicesOfVertices[0]);
+		PdVector p2 = m_surfP.getVertex(indicesOfVertices[1]);
+		PdVector p3 = m_surfP.getVertex(indicesOfVertices[2]);
+		
+		// Calculate e1, e2 and e3.
+		PdVector e1 = PdVector.subNew(p3, p2);
+		PdVector e2 = PdVector.subNew(p1, p3);
+		PdVector e3 = PdVector.subNew(p2, p1);
+		
 		// Calculate area of triangle, using Heron's formula.
 		double a = e1.length();
 		double b = e2.length();
 		double c = e3.length();
 		double s = (a+b+c)/2.0;
 		double area = Math.sqrt(s*(s - a)*(s - b)*(s - c));
+		return area;
+	}
+	
+	public void transform(PdMatrix A) throws Exception {
+		m_surfP.makeElementNormals();
 		
-		// Construct the matrix.
-		double multiplier = 1.0/(2.0 * area);
-		PdMatrix res = new PdMatrix(3);
+		// Calculate G and G^T.
+		PnSparseMatrix G = computeGradientMatrix();
+		PnSparseMatrix GT = G.transposeNew();
 		
-		res.setColumn(0, PdVector.crossNew(normal, e1));
-		res.setColumn(1, PdVector.crossNew(normal, e2));
-		res.setColumn(2, PdVector.crossNew(normal, e3));
+		// Calculate Mv.
+		int amtRows = m_surfP.getNumElements() * 3;
+		PnSparseMatrix Mv = new PnSparseMatrix(amtRows, amtRows, 1);
+		int faceIndex = 0;
+		for(int i = 0; i < amtRows; i++){
+			double area = calculateArea(faceIndex);
+			Mv.setEntry(i, i, area);
+			i++;
+			Mv.setEntry(i, i, area);
+			i++;
+			Mv.setEntry(i, i, area);
+			i++;
+			faceIndex++;
+		}
 		
-		res.multScalar(multiplier);
+		// Calculate g-tilde.
+		PdMatrix gTilde = new PdMatrix(amtRows, 3);
+		for(int i = 0; i < amtRows; i = i + 3){
+			int index = i/3;
+			PdMatrix subG = computeTriangleMatrix(index, m_surfP.getElementNormal(index));
+			PdMatrix subRes = new PdMatrix(A.m_data);
+			subRes.mult(subRes, subG);
+			subRes.transpose();
+			for(int j = 0; j < 3; j++){
+				gTilde.setEntry(i, j, subRes.getEntry(i, j));
+				gTilde.setEntry(i + 1, j, subRes.getEntry(i + 1, j));
+				gTilde.setEntry(i + 2, j, subRes.getEntry(i + 2, j));
+			}
+		}
 		
-		return res;
+		// Compute G^TMvG.
+		PnSparseMatrix interMatrix = PnSparseMatrix.multMatrices(GT, Mv, null);
+		PnSparseMatrix matrix = PnSparseMatrix.multMatrices(interMatrix, G, null);
+		
+		// Compute G^TMvg-tilde. This has three results, called the x-, y-, and z-vectors.
+		PdVector gTilde_x = gTilde.getColumn(0);
+		PdVector gTilde_y = gTilde.getColumn(1);
+		PdVector gTilde_z = gTilde.getColumn(2);
+		
+		PdVector b_x = PnSparseMatrix.rightMultVector(interMatrix, gTilde_x, null);
+		PdVector b_y = PnSparseMatrix.rightMultVector(interMatrix, gTilde_y, null);
+		PdVector b_z = PnSparseMatrix.rightMultVector(interMatrix, gTilde_z, null);
+		
+		// Prepare the x for the equation Ax = b.
+		PdMatrix x = new PdMatrix(m_surfP.getNumVertices(), 3);
+		
+		PdVector x_x = new PdVector(m_surfP.getNumVertices());
+		PdVector x_y = new PdVector(m_surfP.getNumVertices());
+		PdVector x_z = new PdVector(m_surfP.getNumVertices());
+		
+		// Solve system.
+		long factorization = PnMumpsSolver.factor(matrix, PnMumpsSolver.Type.GENERAL_SYMMETRIC);
+		PnMumpsSolver.solve(factorization, x_x, b_x);
+		PnMumpsSolver.solve(factorization, x_y, b_y);
+		PnMumpsSolver.solve(factorization, x_z, b_z);
+			
+		x.setColumn(0, x_x);
+		x.setColumn(1, x_y);
+		x.setColumn(2, x_z);
+			
+		x.transpose();
 	}
 }
