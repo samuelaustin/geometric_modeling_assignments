@@ -541,5 +541,14 @@ public class Registration extends PjWorkshop {
 		x.setColumn(2, x_z);
 			
 		x.transpose();
+		
+		replaceVertices(x);
+	}
+	
+	private void replaceVertices(PdMatrix x) {
+		for(int i = 0; i < x.getNumCols(); i++) {
+			PdVector newX = new PdVector(new double[]{x.getEntry(0, i), x.getEntry(1, i), x.getEntry(2, i)});
+			m_surfP.setVertex(i, newX);
+		}
 	}
 }
