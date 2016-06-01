@@ -500,9 +500,15 @@ public class Registration extends PjWorkshop {
 		for(int i = 0; i < amtRows; i = i + 3){
 			int index = i/3;
 			PdMatrix subG = computeTriangleMatrix(index, m_surfP.getElementNormal(index));
-			PdMatrix subRes = new PdMatrix(A.m_data);
-			subRes.mult(subRes, subG);
-			subRes.transpose();
+			PdMatrix subRes;
+			if(m_surfP.getElement(index).hasTag(PsObject.IS_SELECTED)){
+				subRes = new PdMatrix(A.m_data);
+				subRes.mult(subRes, subG);
+				subRes.transpose();
+			}
+			else {
+				subRes = subG;
+			}
 			for(int j = 0; j < 3; j++){
 				gTilde.setEntry(i, j, subRes.getEntry(i, j));
 				gTilde.setEntry(i + 1, j, subRes.getEntry(i + 1, j));
