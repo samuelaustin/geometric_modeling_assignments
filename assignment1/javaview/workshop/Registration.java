@@ -504,11 +504,11 @@ public class Registration extends PjWorkshop {
 			if(m_surfP.getElement(index).hasTag(PsObject.IS_SELECTED)){
 				subRes = new PdMatrix(A.m_data);
 				subRes.mult(subRes, subG);
-				subRes.transpose();
 			}
 			else {
 				subRes = subG;
 			}
+			subRes.transpose();
 			for(int j = 0; j < 3; j++){
 				gTilde.setEntry(i, j, subRes.getEntry(i, j));
 				gTilde.setEntry(i + 1, j, subRes.getEntry(i + 1, j));
