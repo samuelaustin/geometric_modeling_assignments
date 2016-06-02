@@ -414,6 +414,7 @@ public class Registration extends PjWorkshop {
 		int amtTriangles = m_surfP.getNumElements();
 		for(int i = 0; i < amtTriangles; i++){
 			PdMatrix g = computeTriangleMatrix(i, m_surfP.getElementNormals()[i]);
+			
 			int[] indices = m_surfP.getElement(i).getEntries();
 			for(int j = 0; j < 3; j++){
 				res.setEntry(3*i, indices[j], g.getEntry(0, j));
@@ -509,6 +510,7 @@ public class Registration extends PjWorkshop {
 			else {
 				subRes = subG;
 			}
+			// Transpose added, because x-, y- and z-coords should be in their designated columns.
 			subRes.transpose();
 			for(int j = 0; j < 3; j++){
 				gTilde.setEntry(i, j, subRes.getEntry(i, j));
