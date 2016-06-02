@@ -7,6 +7,7 @@ import java.awt.GridLayout;
 import java.awt.Label;
 import java.awt.List;
 import java.awt.Panel;
+import java.awt.TextField;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.CheckboxGroup;
@@ -22,6 +23,7 @@ import jv.project.PgGeometryIf;
 import jv.project.PvGeometryIf;
 import jv.viewer.PvDisplay;
 import jvx.project.PjWorkshop_IP;
+import jv.vecmath.PdMatrix;
 
 
 /**
@@ -39,6 +41,20 @@ public class Registration_IP extends PjWorkshop_IP implements ActionListener{
 	protected	CheckboxGroup 	m_pointOrPlaneRadioButton;
 	protected	Checkbox 		m_point;
 	protected	Checkbox 		m_plane;
+
+	protected 	Panel 			m_matrixPanel;
+	protected 	TextField		m_r1c1;
+	protected 	TextField		m_r1c2;
+	protected 	TextField		m_r1c3;
+	protected 	TextField		m_r2c1;
+	protected 	TextField		m_r2c2;
+	protected 	TextField		m_r2c3;
+	protected 	TextField		m_r3c1;
+	protected 	TextField		m_r3c2;
+	protected 	TextField		m_r3c3;
+	protected   Button			m_apply;
+	protected   Button			m_reset;
+
 
 	/** Constructor */
 	public Registration_IP () {
@@ -97,6 +113,33 @@ public class Registration_IP extends PjWorkshop_IP implements ActionListener{
         add(m_point);
         add(m_plane);
 
+        m_matrixPanel = new Panel();
+      	m_matrixPanel.setLayout(new GridLayout(3,3));
+      	m_r1c1 = new TextField("1");
+		m_r1c2 = new TextField("0");
+		m_r1c3 = new TextField("0");
+		m_r2c1 = new TextField("0");
+		m_r2c2 = new TextField("1");
+		m_r2c3 = new TextField("0");
+		m_r3c1 = new TextField("0");
+		m_r3c2 = new TextField("0");
+		m_r3c3 = new TextField("1");
+		m_matrixPanel.add(m_r1c1);
+		m_matrixPanel.add(m_r1c2);
+		m_matrixPanel.add(m_r1c3);
+		m_matrixPanel.add(m_r2c1);
+		m_matrixPanel.add(m_r2c2);
+		m_matrixPanel.add(m_r2c3);
+		m_matrixPanel.add(m_r3c1);
+		m_matrixPanel.add(m_r3c2);
+		m_matrixPanel.add(m_r3c3);
+
+      	add(m_matrixPanel);
+      	m_apply = new Button("Apply");
+      	m_reset = new Button("Reset");
+      	add(m_apply);
+      	add(m_reset);
+
 		updateGeomList();
 		validate();
 	}
@@ -147,6 +190,50 @@ public class Registration_IP extends PjWorkshop_IP implements ActionListener{
 		else if(source == m_itClosestPointButton)
 		{
 			m_registration.iterativeClosestPoint(m_plane.getState());
+		}
+		else if(source == m_apply)
+		{
+			try
+			{
+				PdMatrix transformation = new PdMatrix(3, 3);
+				transformation.setEntry(0, 0, Double.parseDouble(m_r1c1.getText()));
+				transformation.setEntry(0, 1, Double.parseDouble(m_r1c2.getText()));
+				transformation.setEntry(0, 2, Double.parseDouble(m_r1c3.getText()));
+				transformation.setEntry(1, 0, Double.parseDouble(m_r2c1.getText()));
+				transformation.setEntry(1, 1, Double.parseDouble(m_r2c2.getText()));
+				transformation.setEntry(1, 2, Double.parseDouble(m_r2c3.getText()));
+				transformation.setEntry(2, 0, Double.parseDouble(m_r3c1.getText()));
+				transformation.setEntry(2, 1, Double.parseDouble(m_r3c2.getText()));
+				transformation.setEntry(2, 2, Double.parseDouble(m_r3c3.getText()));
+
+				m_registration.transform(transformation);
+			}
+			catch(Exception e)
+			{
+				System.out.println("Shit be whack");
+			}
+		}
+		else if(source == m_reset)
+		{
+			try
+			{
+				PdMatrix transformation = new PdMatrix(3, 3);
+				transformation.setEntry(0, 0, 1);
+				transformation.setEntry(0, 1, 0);
+				transformation.setEntry(0, 2, 0);
+				transformation.setEntry(1, 0, 0);
+				transformation.setEntry(1, 1, 1);
+				transformation.setEntry(1, 2, 0);
+				transformation.setEntry(2, 0, 0);
+				transformation.setEntry(2, 1, 0);
+				transformation.setEntry(2, 2, 1);
+
+				m_registration.transform(transformation);
+			}
+			catch(Exception e)
+			{
+				System.out.println("Shit be whack");
+			}
 		}
 	}
 	/**

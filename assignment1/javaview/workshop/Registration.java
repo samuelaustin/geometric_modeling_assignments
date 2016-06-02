@@ -344,6 +344,7 @@ public class Registration extends PjWorkshop {
 	
 	private void rotateAndTranslate(PgElementSet set, PdMatrix r, PdVector t)
 	{
+		r.transpose();
 		System.out.println("Rotating and translating");
 		System.out.println(r);
 		System.out.println(t);
@@ -556,5 +557,6 @@ public class Registration extends PjWorkshop {
 			PdVector newX = new PdVector(new double[]{x.getEntry(0, i), x.getEntry(1, i), x.getEntry(2, i)});
 			m_surfP.setVertex(i, newX);
 		}
+		m_surfP.update(m_surfP);
 	}
 }
