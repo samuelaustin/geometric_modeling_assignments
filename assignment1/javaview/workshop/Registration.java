@@ -483,7 +483,7 @@ public class Registration extends PjWorkshop {
 		m_surfP.makeElementNormals();
 		
 		// Calculate G and G^T.
-		PnSparseMatrix G = computeGradientMatrix();
+		PnSparseMatrix G = computeGradientMatrix(A);
 		PnSparseMatrix GT = G.transposeNew();
 		
 		// Calculate Mv.
