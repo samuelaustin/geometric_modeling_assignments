@@ -483,8 +483,10 @@ public class Registration extends PjWorkshop {
 		PnSparseMatrix G = computeGradientMatrix();
 		PnSparseMatrix GT = G.transposeNew();
 		
+
 		// Calculate Mv.
 		int amtRows = m_surfP.getNumElements() * 3;
+		System.out.println("Rows: " + amtRows);
 		PnSparseMatrix Mv = new PnSparseMatrix(amtRows, amtRows, 1);
 		int faceIndex = 0;
 		for(int i = 0; i < amtRows; i++){
@@ -494,10 +496,9 @@ public class Registration extends PjWorkshop {
 			Mv.setEntry(i, i, area);
 			i++;
 			Mv.setEntry(i, i, area);
-			i++;
 			faceIndex++;
 		}
-		System.out.println("Rows: " + amtRows);
+		System.out.println("Created Mv");
 		// Calculate g-tilde.
 		PdMatrix gTilde = new PdMatrix(amtRows, 3);
 		for(int i = 0; i < amtRows; i = i + 3){
@@ -505,23 +506,21 @@ public class Registration extends PjWorkshop {
 			PdMatrix subG = computeTriangleMatrix(index, m_surfP.getElementNormal(index));
 			PdMatrix subRes;
 			if(m_surfP.getElement(index).hasTag(PsObject.IS_SELECTED)){
-				System.out.println("Selected.");
 				subRes = new PdMatrix(A.m_data);
 				subRes.mult(subRes, subG);
 			}
 			else {
-				System.out.println("Not selected.");
 				subRes = subG;
 			}
 			// Transpose added, because x-, y- and z-coords should be in their designated columns.
 			subRes.transpose();
 			for(int j = 0; j < 3; j++){
-				gTilde.setEntry(i, j, subRes.getEntry(i, j));
-				gTilde.setEntry(i + 1, j, subRes.getEntry(i + 1, j));
-				gTilde.setEntry(i + 2, j, subRes.getEntry(i + 2, j));
+				gTilde.setEntry(i, j, subRes.getEntry(0, j));
+				gTilde.setEntry(i + 1, j, subRes.getEntry(1, j));
+				gTilde.setEntry(i + 2, j, subRes.getEntry(2, j));
 			}
 		}
-		
+		System.out.println("Created gTilde");
 		// Compute G^TMvG.
 		PnSparseMatrix interMatrix = PnSparseMatrix.multMatrices(GT, Mv, null);
 		PnSparseMatrix matrix = PnSparseMatrix.multMatrices(interMatrix, G, null);

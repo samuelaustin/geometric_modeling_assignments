@@ -213,7 +213,7 @@ public class Registration_IP extends PjWorkshop_IP implements ActionListener{
 			}
 			catch(Exception e)
 			{
-				System.out.println("Shit be whack");
+				e.printStackTrace();
 			}
 		}
 		else if(source == m_reset)
@@ -235,7 +235,7 @@ public class Registration_IP extends PjWorkshop_IP implements ActionListener{
 			}
 			catch(Exception e)
 			{
-				System.out.println("Shit be whack");
+				e.printStackTrace();
 			}
 		}
 	}
