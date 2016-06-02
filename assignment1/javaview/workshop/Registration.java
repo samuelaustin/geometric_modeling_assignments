@@ -404,7 +404,7 @@ public class Registration extends PjWorkshop {
 	// =====================================                                ===================================================
 	// ========================================================================================================================
 	
-	public PnSparseMatrix computeGradientMatrix(PdMatrix A){
+	public PnSparseMatrix computeGradientMatrix(){
 		// Init PnSparseMatrix.
 		int amtRows = m_surfP.getNumElements() * 3;
 		int amtCols = m_surfP.getNumVertices();
@@ -413,11 +413,6 @@ public class Registration extends PjWorkshop {
 		int amtTriangles = m_surfP.getNumElements();
 		for(int i = 0; i < amtTriangles; i++){
 			PdMatrix g = computeTriangleMatrix(i, m_surfP.getElementNormals()[i]);
-			
-			// If triangle is selected then multiply it with input matrix.
-			if(m_surfP.getElement(i).hasTag(PsObject.IS_SELECTED)){
-				g.mult(A, g);
-			}
 			
 			int[] indices = m_surfP.getElement(i).getEntries();
 			for(int j = 0; j < 3; j++){
@@ -483,7 +478,7 @@ public class Registration extends PjWorkshop {
 		m_surfP.makeElementNormals();
 		
 		// Calculate G and G^T.
-		PnSparseMatrix G = computeGradientMatrix(A);
+		PnSparseMatrix G = computeGradientMatrix();
 		PnSparseMatrix GT = G.transposeNew();
 		
 		// Calculate Mv.
