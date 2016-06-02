@@ -14,6 +14,8 @@ import java.awt.CheckboxGroup;
 import java.awt.Checkbox;
 import java.util.Vector;
 
+import javax.swing.JFrame;
+
 import jv.geom.PgElementSet;
 import jv.object.PsConfig;
 import jv.object.PsDialog;
@@ -235,7 +237,7 @@ public class Registration_IP extends PjWorkshop_IP implements ActionListener{
 			}
 			catch(Exception e)
 			{
-				e.printStackTrace();
+				new JFrame("Shit went down man.");
 			}
 		}
 	}

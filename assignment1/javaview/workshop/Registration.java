@@ -9,6 +9,8 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Vector;
 
+import javax.swing.JFrame;
+
 import jv.geom.PgBndPolygon;
 import jv.geom.PgElementSet;
 import jv.geom.PgPolygonSet;
