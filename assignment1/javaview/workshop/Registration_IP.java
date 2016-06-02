@@ -137,6 +137,9 @@ public class Registration_IP extends PjWorkshop_IP implements ActionListener{
       	add(m_matrixPanel);
       	m_apply = new Button("Apply");
       	m_reset = new Button("Reset");
+      	m_apply.addActionListener(this);
+      	m_reset.addActionListener(this);
+
       	add(m_apply);
       	add(m_reset);
 
@@ -205,7 +208,7 @@ public class Registration_IP extends PjWorkshop_IP implements ActionListener{
 				transformation.setEntry(2, 0, Double.parseDouble(m_r3c1.getText()));
 				transformation.setEntry(2, 1, Double.parseDouble(m_r3c2.getText()));
 				transformation.setEntry(2, 2, Double.parseDouble(m_r3c3.getText()));
-
+				System.out.println("Calling transform");
 				m_registration.transform(transformation);
 			}
 			catch(Exception e)
@@ -227,7 +230,7 @@ public class Registration_IP extends PjWorkshop_IP implements ActionListener{
 				transformation.setEntry(2, 0, 0);
 				transformation.setEntry(2, 1, 0);
 				transformation.setEntry(2, 2, 1);
-
+				System.out.println("Calling transform (reset)");
 				m_registration.transform(transformation);
 			}
 			catch(Exception e)

@@ -476,6 +476,7 @@ public class Registration extends PjWorkshop {
 	}
 	
 	public void transform(PdMatrix A) throws Exception {
+		System.out.println("Starting transform.");
 		m_surfP.makeElementNormals();
 		
 		// Calculate G and G^T.
@@ -496,7 +497,7 @@ public class Registration extends PjWorkshop {
 			i++;
 			faceIndex++;
 		}
-		
+		System.out.println("Rows: " + amtRows);
 		// Calculate g-tilde.
 		PdMatrix gTilde = new PdMatrix(amtRows, 3);
 		for(int i = 0; i < amtRows; i = i + 3){
@@ -504,10 +505,12 @@ public class Registration extends PjWorkshop {
 			PdMatrix subG = computeTriangleMatrix(index, m_surfP.getElementNormal(index));
 			PdMatrix subRes;
 			if(m_surfP.getElement(index).hasTag(PsObject.IS_SELECTED)){
+				System.out.println("Selected.");
 				subRes = new PdMatrix(A.m_data);
 				subRes.mult(subRes, subG);
 			}
 			else {
+				System.out.println("Not selected.");
 				subRes = subG;
 			}
 			// Transpose added, because x-, y- and z-coords should be in their designated columns.
