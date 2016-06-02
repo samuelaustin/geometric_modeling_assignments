@@ -509,6 +509,7 @@ public class Registration extends PjWorkshop {
 			else {
 				subRes = subG;
 			}
+			// Transpose added, because x-, y- and z-coords should be in their designated columns.
 			subRes.transpose();
 			for(int j = 0; j < 3; j++){
 				gTilde.setEntry(i, j, subRes.getEntry(i, j));
