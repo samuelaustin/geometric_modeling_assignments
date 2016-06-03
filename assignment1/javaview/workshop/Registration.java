@@ -508,15 +508,17 @@ public class Registration extends PjWorkshop {
 		for(int i = 0; i < amtRows; i = i + 3){
 			int index = i/3;
 			PdMatrix subG = computeTriangleMatrix(index, m_surfP.getElementNormal(index));
+			subG.transpose();
 			PdMatrix subRes = new PdMatrix();
 			if(m_surfP.getElement(index).hasTag(PsObject.IS_SELECTED)){
+				System.out.println("Selected: " + index);
 				subRes.mult(A, subG);
 			}
 			else {
 				subRes = subG;
 			}
 			// Transpose added, because x-, y- and z-coords should be in their designated columns.
-			subRes.transpose();
+			//subRes.transpose();
 			for(int j = 0; j < 3; j++){
 				gTilde.setEntry(i, j, subRes.getEntry(0, j));
 				gTilde.setEntry(i + 1, j, subRes.getEntry(1, j));
@@ -558,15 +560,21 @@ public class Registration extends PjWorkshop {
 		x.setColumn(0, x_x);
 		x.setColumn(1, x_y);
 		x.setColumn(2, x_z);
-			
+		System.out.println("Before transpose: " + x.getNumCols());
 		x.transpose();
-		
+		System.out.println("After transpose: " + x.getNumCols());
 		replaceVertices(x);
 	}
 	
 	private void replaceVertices(PdMatrix x) {
 		for(int i = 0; i < x.getNumCols(); i++) {
+			PdVector old = m_surfP.getVertex(i);
 			PdVector newX = new PdVector(new double[]{x.getEntry(0, i), x.getEntry(1, i), x.getEntry(2, i)});
+			
+			if(!old.equals(newX))
+			{
+				System.out.println("Modified: " + i);
+			}
 			m_surfP.setVertex(i, newX);
 		}
 		m_surfP.update(m_surfP);
