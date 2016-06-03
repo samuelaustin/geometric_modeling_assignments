@@ -448,9 +448,9 @@ public class Registration extends PjWorkshop {
 		double multiplier = 1.0/(2.0 * area);
 		PdMatrix res = new PdMatrix(3);
 		
-		res.setColumn(0, PdVector.crossNew(e1, normal));
-		res.setColumn(1, PdVector.crossNew(e2, normal));
-		res.setColumn(2, PdVector.crossNew(e3, normal));
+		res.setColumn(0, PdVector.crossNew(normal, e1));
+		res.setColumn(1, PdVector.crossNew(normal, e2));
+		res.setColumn(2, PdVector.crossNew(normal, e3));
 		
 		res.multScalar(multiplier);
 		
@@ -504,37 +504,73 @@ public class Registration extends PjWorkshop {
 		System.out.println("Created Mv");
 		//ystem.out.println((Array.print(Mv.m_data)));
 		// Calculate g-tilde.
+		
+		PdMatrix X = new PdMatrix(amtRows, 3);
+		
+		for(int triangle = 0; triangle < m_surfP.getNumElements(); triangle++){
+			int[] indicesOfVertices = m_surfP.getElement(triangle).getEntries();
+			
+			for(int i = 0; i < indicesOfVertices.length; i++){
+				X.setRow(3*triangle + i, m_surfP.getVertex(indicesOfVertices[i]));
+			}
+		}
+		
+		PnSparseMatrix Gx = PnSparseMatrix.multMatrices(G, new PnSparseMatrix(X), null);
+		
+		for(int triangle = 0; triangle < m_surfP.getNumElements(); triangle++){
+			int[] indicesOfVertices = m_surfP.getElement(triangle).getEntries();
+			
+			if(m_surfP.getElement(triangle).hasTag(PsObject.IS_SELECTED)) {
+				PdMatrix m = new PdMatrix(3);
+				m.setRow(0, Gx.getEntries(3*triangle));
+				m.setRow(1, Gx.getEntries(3*triangle + 1));
+				m.setRow(2, Gx.getEntries(3*triangle + 2));
+				
+				m.mult(A, m);
+				
+				SetRow(Gx, m.getRow(0), 3*triangle);
+				SetRow(Gx, m.getRow(1), 3*triangle+1);
+				SetRow(Gx, m.getRow(2), 3*triangle+2);
+			}
+		}
+		
+		
+		/*
 		PdMatrix gTilde = new PdMatrix(amtRows, 3);
-		for(int i = 0; i < amtRows; i = i + 3){
-			int index = i/3;
-			PdMatrix subG = computeTriangleMatrix(index, m_surfP.getElementNormal(index));
-			subG.transpose();
+		for(int i = 0; i < m_surfP.getNumElements(); i++){
+			PdMatrix subG = computeTriangleMatrix(index, m_surfP.getElementNormal(i));
+			// subG.transpose();
 			PdMatrix subRes = new PdMatrix();
 			if(m_surfP.getElement(index).hasTag(PsObject.IS_SELECTED)){
-				System.out.println("Selected: " + index);
-				subRes.mult(A, subG);
+				System.out.println("Selected: " + i);
+				subRes.mult(subG, A);
 			}
 			else {
 				subRes = subG;
 			}
 			// Transpose added, because x-, y- and z-coords should be in their designated columns.
-			//subRes.transpose();
+			subRes.transpose();
 			for(int j = 0; j < 3; j++){
-				gTilde.setEntry(i, j, subRes.getEntry(0, j));
-				gTilde.setEntry(i + 1, j, subRes.getEntry(1, j));
-				gTilde.setEntry(i + 2, j, subRes.getEntry(2, j));
+				gTilde.setEntry(3*i, j, subRes.getEntry(0, j));
+				gTilde.setEntry(3*i + 1, j, subRes.getEntry(1, j));
+				gTilde.setEntry(3*i + 2, j, subRes.getEntry(2, j));
 			}
-		}
+		}*/
 		System.out.println("Created gTilde");
 		// Compute G^TMvG.
 		PnSparseMatrix interMatrix = PnSparseMatrix.multMatrices(GT, Mv, null);
 		PnSparseMatrix matrix = PnSparseMatrix.multMatrices(interMatrix, G, null);
 		
 		// Compute G^TMvg-tilde. This has three results, called the x-, y-, and z-vectors.
-		PdVector gTilde_x = gTilde.getColumn(0);
-		PdVector gTilde_y = gTilde.getColumn(1);
-		PdVector gTilde_z = gTilde.getColumn(2);
-		
+		PdVector gTilde_x = new PdVector();
+		PdVector gTilde_y = new PdVector();
+		PdVector gTilde_z = new PdVector();
+		for(int rowIndex = 0; rowIndex < Gx.getNumRows(); rowIndex++)
+		{
+			gTilde_x.addEntry(Gx.getEntry(rowIndex,0));
+			gTilde_y.addEntry(Gx.getEntry(rowIndex,1));
+			gTilde_z.addEntry(Gx.getEntry(rowIndex,2));
+		}
 		PdVector b_x = PnSparseMatrix.rightMultVector(interMatrix, gTilde_x, null);
 		PdVector b_y = PnSparseMatrix.rightMultVector(interMatrix, gTilde_y, null);
 		PdVector b_z = PnSparseMatrix.rightMultVector(interMatrix, gTilde_z, null);
@@ -577,5 +613,13 @@ public class Registration extends PjWorkshop {
 		}
 		m_surfP.update(m_surfP);
 		System.out.println("Done");
+	}
+	
+	private void SetRow(PnSparseMatrix matrix, PdVector row, int rowIndex)
+	{
+		for(int i = 0; i < matrix.getNumCols(); i++)
+		{
+			matrix.setEntry(rowIndex, i, row.getEntry(i));
+		}
 	}
 }
