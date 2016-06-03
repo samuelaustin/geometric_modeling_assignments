@@ -560,16 +560,14 @@ public class Registration extends PjWorkshop {
 		x.setColumn(0, x_x);
 		x.setColumn(1, x_y);
 		x.setColumn(2, x_z);
-		System.out.println("Before transpose: " + x.getNumCols());
-		x.transpose();
-		System.out.println("After transpose: " + x.getNumCols());
+		
 		replaceVertices(x);
 	}
 	
 	private void replaceVertices(PdMatrix x) {
-		for(int i = 0; i < x.getNumCols(); i++) {
+		for(int i = 0; i < x.getNumRows(); i++) {
 			PdVector old = m_surfP.getVertex(i);
-			PdVector newX = new PdVector(new double[]{x.getEntry(0, i), x.getEntry(1, i), x.getEntry(2, i)});
+			PdVector newX = new PdVector(new double[]{x.getEntry(i, 0), x.getEntry(i, 1), x.getEntry(i, 2)});
 			
 			if(!old.equals(newX))
 			{
