@@ -29,6 +29,7 @@ import jv.viewer.PvDisplay;
 import jv.project.PvGeometryIf;
 import jvx.numeric.PnMatrix;
 import jvx.numeric.PnSparseMatrix;
+import jvx.numeric.PnConjugateGradientMatrix;
 import jvx.project.PjWorkshop;
 
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
@@ -501,15 +502,15 @@ public class Registration extends PjWorkshop {
 			faceIndex++;
 		}
 		System.out.println("Created Mv");
+		//ystem.out.println((Array.print(Mv.m_data)));
 		// Calculate g-tilde.
 		PdMatrix gTilde = new PdMatrix(amtRows, 3);
 		for(int i = 0; i < amtRows; i = i + 3){
 			int index = i/3;
 			PdMatrix subG = computeTriangleMatrix(index, m_surfP.getElementNormal(index));
-			PdMatrix subRes;
+			PdMatrix subRes = new PdMatrix();
 			if(m_surfP.getElement(index).hasTag(PsObject.IS_SELECTED)){
-				subRes = new PdMatrix(A.m_data);
-				subRes.mult(subRes, subG);
+				subRes.mult(A, subG);
 			}
 			else {
 				subRes = subG;
@@ -544,11 +545,16 @@ public class Registration extends PjWorkshop {
 		PdVector x_z = new PdVector(m_surfP.getNumVertices());
 		
 		// Solve system.
+		PnConjugateGradientMatrix conjGradMatrix = new PnConjugateGradientMatrix();
+		conjGradMatrix.solve(matrix, x_x, b_x);
+		conjGradMatrix.solve(matrix, x_y, b_y);
+		conjGradMatrix.solve(matrix, x_z, b_z);
+		/*
 		long factorization = PnMumpsSolver.factor(matrix, PnMumpsSolver.Type.GENERAL_SYMMETRIC);
 		PnMumpsSolver.solve(factorization, x_x, b_x);
 		PnMumpsSolver.solve(factorization, x_y, b_y);
 		PnMumpsSolver.solve(factorization, x_z, b_z);
-			
+		*/	
 		x.setColumn(0, x_x);
 		x.setColumn(1, x_y);
 		x.setColumn(2, x_z);
@@ -564,5 +570,6 @@ public class Registration extends PjWorkshop {
 			m_surfP.setVertex(i, newX);
 		}
 		m_surfP.update(m_surfP);
+		System.out.println("Done");
 	}
 }
