@@ -43,11 +43,16 @@ import dev6.numeric.PnMumpsSolver;
  */
 
 public class Registration extends PjWorkshop {
-	
+
+	PnSparseMatrix G;
+	PnSparseMatrix GT;
+	PnSparseMatrix Mv;
+	PdMatrix X;
+
 	/** First surface to be registered. */	
-	PgElementSet	m_surfP;	
+	public PgElementSet	m_surfP;	
 	/** Second surface to be registered. */
-	PgElementSet	m_surfQ;	
+	public PgElementSet	m_surfQ;	
 	
 	
 	/** Constructor */
@@ -63,11 +68,16 @@ public class Registration extends PjWorkshop {
 		super.init();
 	}
 	
-	
 	/** Set two Geometries. */
 	public void setGeometries(PgElementSet surfP, PgElementSet surfQ) {
+		if(surfP == null)
+		{
+			System.out.println("SurfP is null");
+			return;
+		}
 		m_surfP = surfP;
 		m_surfQ = surfQ;
+		initMatrices(m_surfP);
 	}
 	
 	public void iterativeClosestPoint(boolean pointtoplane){
@@ -408,17 +418,20 @@ public class Registration extends PjWorkshop {
 	// =====================================                                ===================================================
 	// ========================================================================================================================
 	
-	public PnSparseMatrix computeGradientMatrix(){
-		// Init PnSparseMatrix.
-		int amtRows = m_surfP.getNumElements() * 3;
-		int amtCols = m_surfP.getNumVertices();
+	public PnSparseMatrix computeGradientMatrix(PgElementSet surface){
+		if(surface == null)
+		{
+			System.out.println("Surface is null (computeGradientMatrix)");
+		}
+		int amtRows = surface.getNumElements() * 3;
+		int amtCols = surface.getNumVertices();
 		PnSparseMatrix res = new PnSparseMatrix(amtRows, amtCols, 3);
 		
-		int amtTriangles = m_surfP.getNumElements();
+		int amtTriangles = surface.getNumElements();
 		for(int i = 0; i < amtTriangles; i++){
-			PdMatrix g = computeTriangleMatrix(i, m_surfP.getElementNormals()[i]);
+			PdMatrix g = computeTriangleMatrix(surface, i, surface.getElementNormals()[i]);
 			
-			int[] indices = m_surfP.getElement(i).getEntries();
+			int[] indices = surface.getElement(i).getEntries();
 			for(int j = 0; j < 3; j++){
 				res.setEntry(3*i, indices[j], g.getEntry(0, j));
 				res.setEntry(3*i + 1, indices[j], g.getEntry(1, j));
@@ -429,12 +442,12 @@ public class Registration extends PjWorkshop {
 		return res;
 	}
 	
-	private PdMatrix computeTriangleMatrix(int faceIndex, PdVector normal){
-		int[] indicesOfVertices = m_surfP.getElement(faceIndex).getEntries();
+	private PdMatrix computeTriangleMatrix(PgElementSet surface, int faceIndex, PdVector normal){
+		int[] indicesOfVertices = surface.getElement(faceIndex).getEntries();
 		// Get p1, p2 and p3.
-		PdVector p1 = m_surfP.getVertex(indicesOfVertices[0]);
-		PdVector p2 = m_surfP.getVertex(indicesOfVertices[1]);
-		PdVector p3 = m_surfP.getVertex(indicesOfVertices[2]);
+		PdVector p1 = surface.getVertex(indicesOfVertices[0]);
+		PdVector p2 = surface.getVertex(indicesOfVertices[1]);
+		PdVector p3 = surface.getVertex(indicesOfVertices[2]);
 		
 		// Calculate e1, e2 and e3.
 		PdVector e1 = PdVector.subNew(p3, p2);
@@ -442,7 +455,7 @@ public class Registration extends PjWorkshop {
 		PdVector e3 = PdVector.subNew(p2, p1);
 		
 		// Calculate area of the triangle.
-		double area = calculateArea(faceIndex);
+		double area = calculateArea(surface, faceIndex);
 		
 		// Construct the matrix.
 		double multiplier = 1.0/(2.0 * area);
@@ -457,12 +470,12 @@ public class Registration extends PjWorkshop {
 		return res;
 	}
 	
-	private double calculateArea(int faceIndex) {
-		int[] indicesOfVertices = m_surfP.getElement(faceIndex).getEntries();
+	private double calculateArea(PgElementSet surface, int faceIndex) {
+		int[] indicesOfVertices = surface.getElement(faceIndex).getEntries();
 		// Get p1, p2 and p3.
-		PdVector p1 = m_surfP.getVertex(indicesOfVertices[0]);
-		PdVector p2 = m_surfP.getVertex(indicesOfVertices[1]);
-		PdVector p3 = m_surfP.getVertex(indicesOfVertices[2]);
+		PdVector p1 = surface.getVertex(indicesOfVertices[0]);
+		PdVector p2 = surface.getVertex(indicesOfVertices[1]);
+		PdVector p3 = surface.getVertex(indicesOfVertices[2]);
 		
 		// Calculate e1, e2 and e3.
 		PdVector e1 = PdVector.subNew(p3, p2);
@@ -477,23 +490,20 @@ public class Registration extends PjWorkshop {
 		double area = Math.sqrt(s*(s - a)*(s - b)*(s - c));
 		return area;
 	}
-	
-	public void transform(PdMatrix A) throws Exception {
-		System.out.println("Starting transform.");
-		m_surfP.makeElementNormals();
-		
+
+	private void initMatrices(PgElementSet surface)
+	{
 		// Calculate G and G^T.
-		PnSparseMatrix G = computeGradientMatrix();
-		PnSparseMatrix GT = G.transposeNew();
-		
+		surface.makeElementNormals();
+		G = computeGradientMatrix(surface);
+		GT = G.transposeNew();
 
 		// Calculate Mv.
-		int amtRows = m_surfP.getNumElements() * 3;
-		System.out.println("Rows: " + amtRows);
-		PnSparseMatrix Mv = new PnSparseMatrix(amtRows, amtRows, 1);
+		int amtRows = surface.getNumElements() * 3;
+		Mv = new PnSparseMatrix(amtRows, amtRows, 1);
 		int faceIndex = 0;
 		for(int i = 0; i < amtRows; i++){
-			double area = calculateArea(faceIndex);
+			double area = calculateArea(surface, faceIndex);
 			Mv.setEntry(i, i, area);
 			i++;
 			Mv.setEntry(i, i, area);
@@ -501,20 +511,25 @@ public class Registration extends PjWorkshop {
 			Mv.setEntry(i, i, area);
 			faceIndex++;
 		}
-		System.out.println("Created Mv");
 
 		// Calculate g-tilde.
-		PdMatrix X = new PdMatrix(m_surfP.getNumVertices(), 3);
-		for(int vIndex = 0; vIndex < m_surfP.getNumVertices(); vIndex++){
-			X.setRow(vIndex, m_surfP.getVertex(vIndex));
+		X = new PdMatrix(surface.getNumVertices(), 3);
+		for(int vIndex = 0; vIndex < surface.getNumVertices(); vIndex++){
+			X.setRow(vIndex, surface.getVertex(vIndex));
 		}
+		
+		System.out.println("Matrices created.");
+	}
+	
+	public void transform(PgElementSet surface, PdMatrix A) throws Exception {
+		System.out.println("Starting transform.");
 
 		PnSparseMatrix Gx = PnSparseMatrix.multMatrices(G, new PnSparseMatrix(X), null);
-		
-		for(int triangle = 0; triangle < m_surfP.getNumElements(); triangle++){
-			int[] indicesOfVertices = m_surfP.getElement(triangle).getEntries();
+
+		for(int triangle = 0; triangle < surface.getNumElements(); triangle++){
+			int[] indicesOfVertices = surface.getElement(triangle).getEntries();
 			
-			if(m_surfP.getElement(triangle).hasTag(PsObject.IS_SELECTED)) {
+			if(surface.getElement(triangle).hasTag(PsObject.IS_SELECTED)) {
 				PdMatrix m = new PdMatrix(3);
 				m.setRow(0, Gx.getEntries(3*triangle));
 				m.setRow(1, Gx.getEntries(3*triangle + 1));
@@ -529,7 +544,6 @@ public class Registration extends PjWorkshop {
 			}
 		}
 
-		System.out.println("Created gTilde");
 		// Compute G^TMvG.
 		PnSparseMatrix interMatrix = PnSparseMatrix.multMatrices(GT, Mv, null);
 		PnSparseMatrix matrix = PnSparseMatrix.multMatrices(interMatrix, G, null);
@@ -550,11 +564,11 @@ public class Registration extends PjWorkshop {
 		PdVector b_z = PnSparseMatrix.rightMultVector(interMatrix, gTilde_z, null);
 		
 		// Prepare the x for the equation Ax = b.
-		PdMatrix x = new PdMatrix(m_surfP.getNumVertices(), 3);
+		PdMatrix x = new PdMatrix(surface.getNumVertices(), 3);
 		
-		PdVector x_x = new PdVector(m_surfP.getNumVertices());
-		PdVector x_y = new PdVector(m_surfP.getNumVertices());
-		PdVector x_z = new PdVector(m_surfP.getNumVertices());
+		PdVector x_x = new PdVector(surface.getNumVertices());
+		PdVector x_y = new PdVector(surface.getNumVertices());
+		PdVector x_z = new PdVector(surface.getNumVertices());
 		
 		// Solve system.
 		PnConjugateGradientMatrix conjGradMatrix = new PnConjugateGradientMatrix();
@@ -571,17 +585,17 @@ public class Registration extends PjWorkshop {
 		x.setColumn(1, x_y);
 		x.setColumn(2, x_z);
 		
-		replaceVertices(x);
+		replaceVertices(surface, x);
 	}
 	
-	private void replaceVertices(PdMatrix x) {
+	private void replaceVertices(PgElementSet surface, PdMatrix x) {
 		for(int i = 0; i < x.getNumRows(); i++) {
-			PdVector old = m_surfP.getVertex(i);
+			PdVector old = surface.getVertex(i);
 			PdVector newX = new PdVector(new double[]{x.getEntry(i, 0), x.getEntry(i, 1), x.getEntry(i, 2)});
 
-			m_surfP.setVertex(i, newX);
+			surface.setVertex(i, newX);
 		}
-		m_surfP.update(m_surfP);
+		surface.update(surface);
 		System.out.println("Done");
 	}
 	

@@ -27,6 +27,8 @@ import jv.viewer.PvDisplay;
 import jvx.project.PjWorkshop_IP;
 import jv.vecmath.PdMatrix;
 
+import jv.number.PuDouble;
+
 
 /**
  * Info Panel of Workshop for surface registration
@@ -56,6 +58,12 @@ public class Registration_IP extends PjWorkshop_IP implements ActionListener{
 	protected 	TextField		m_r3c3;
 	protected   Button			m_apply;
 	protected   Button			m_reset;
+	protected   Button			m_applyRotation;
+	protected 	PuDouble 		m_degrees;
+	protected	CheckboxGroup 	m_axisRadioButton;
+	protected	Checkbox 		m_yAxis;
+	protected	Checkbox 		m_xAxis;
+	protected	Checkbox 		m_zAxis;
 
 
 	/** Constructor */
@@ -139,11 +147,29 @@ public class Registration_IP extends PjWorkshop_IP implements ActionListener{
       	add(m_matrixPanel);
       	m_apply = new Button("Apply");
       	m_reset = new Button("Reset");
+      	m_applyRotation = new Button("Apply Rotation");
       	m_apply.addActionListener(this);
       	m_reset.addActionListener(this);
+      	m_applyRotation.addActionListener(this);
 
       	add(m_apply);
       	add(m_reset);
+
+      	m_degrees = new PuDouble("Degrees");
+		m_degrees.setDefBounds(-180,180,0.1,1);
+		m_degrees.addUpdateListener(this);
+		m_degrees.init();
+		add(m_degrees.getInfoPanel());
+
+		m_axisRadioButton = new CheckboxGroup();
+		m_yAxis = new Checkbox("Y-axis", m_axisRadioButton, true);
+        m_xAxis = new Checkbox("X-axis", m_axisRadioButton, false);
+        m_zAxis = new Checkbox("Z-axis", m_axisRadioButton, false);
+        add(m_yAxis);
+        add(m_xAxis);
+        add(m_zAxis);
+
+        add(m_applyRotation);
 
 		updateGeomList();
 		validate();
@@ -198,47 +224,87 @@ public class Registration_IP extends PjWorkshop_IP implements ActionListener{
 		}
 		else if(source == m_apply)
 		{
-			try
-			{
-				PdMatrix transformation = new PdMatrix(3, 3);
-				transformation.setEntry(0, 0, Double.parseDouble(m_r1c1.getText()));
-				transformation.setEntry(0, 1, Double.parseDouble(m_r1c2.getText()));
-				transformation.setEntry(0, 2, Double.parseDouble(m_r1c3.getText()));
-				transformation.setEntry(1, 0, Double.parseDouble(m_r2c1.getText()));
-				transformation.setEntry(1, 1, Double.parseDouble(m_r2c2.getText()));
-				transformation.setEntry(1, 2, Double.parseDouble(m_r2c3.getText()));
-				transformation.setEntry(2, 0, Double.parseDouble(m_r3c1.getText()));
-				transformation.setEntry(2, 1, Double.parseDouble(m_r3c2.getText()));
-				transformation.setEntry(2, 2, Double.parseDouble(m_r3c3.getText()));
-				System.out.println("Calling transform");
-				m_registration.transform(transformation);
-			}
-			catch(Exception e)
-			{
-				e.printStackTrace();
-			}
+			applyTransformation();
 		}
 		else if(source == m_reset)
 		{
-			try
+			m_r1c1.setText("1");
+			m_r1c2.setText("0");
+			m_r1c3.setText("0");
+			m_r2c1.setText("0");
+			m_r2c2.setText("1");
+			m_r2c3.setText("0");
+			m_r3c1.setText("0");
+			m_r3c2.setText("0");
+			m_r3c3.setText("1");
+			applyTransformation();
+		}
+		else if(m_applyRotation == source)
+		{
+			double degrees = m_degrees.getValue();
+			double radians = degrees * Math.PI / 180;
+			double cos = Math.cos(radians);
+			double sin = Math.sin(radians);
+			if(m_yAxis.getState())
 			{
-				PdMatrix transformation = new PdMatrix(3, 3);
-				transformation.setEntry(0, 0, 1);
-				transformation.setEntry(0, 1, 0);
-				transformation.setEntry(0, 2, 0);
-				transformation.setEntry(1, 0, 0);
-				transformation.setEntry(1, 1, 1);
-				transformation.setEntry(1, 2, 0);
-				transformation.setEntry(2, 0, 0);
-				transformation.setEntry(2, 1, 0);
-				transformation.setEntry(2, 2, 1);
-				System.out.println("Calling transform (reset)");
-				m_registration.transform(transformation);
+				m_r1c1.setText(Double.toString(cos));
+				m_r1c2.setText(Double.toString(-sin));
+				m_r1c3.setText("0");
+				m_r2c1.setText(Double.toString(sin));
+				m_r2c2.setText(Double.toString(cos));
+				m_r2c3.setText("0");
+				m_r3c1.setText("0");
+				m_r3c2.setText("0");
+				m_r3c3.setText("1");
 			}
-			catch(Exception e)
+			else if(m_xAxis.getState())
 			{
-				new JFrame("Shit went down man.");
+				m_r1c1.setText("1");
+				m_r1c2.setText("0");
+				m_r1c3.setText("0");
+				m_r2c1.setText("0");
+				m_r2c2.setText(Double.toString(cos));
+				m_r2c3.setText(Double.toString(-sin));
+				m_r3c1.setText("0");
+				m_r3c2.setText(Double.toString(sin));
+				m_r3c3.setText(Double.toString(cos));
 			}
+			else if(m_zAxis.getState())
+			{
+				m_r1c1.setText(Double.toString(cos));
+				m_r1c2.setText("0");
+				m_r1c3.setText(Double.toString(sin));
+				m_r2c1.setText("0");
+				m_r2c2.setText("1");
+				m_r2c3.setText("0");
+				m_r3c1.setText(Double.toString(-sin));
+				m_r3c2.setText("0");
+				m_r3c3.setText(Double.toString(cos));
+			}
+			applyTransformation();
+		}
+	}
+
+	private void applyTransformation()
+	{
+		try
+		{
+			PdMatrix transformation = new PdMatrix(3, 3);
+			transformation.setEntry(0, 0, Double.parseDouble(m_r1c1.getText()));
+			transformation.setEntry(0, 1, Double.parseDouble(m_r1c2.getText()));
+			transformation.setEntry(0, 2, Double.parseDouble(m_r1c3.getText()));
+			transformation.setEntry(1, 0, Double.parseDouble(m_r2c1.getText()));
+			transformation.setEntry(1, 1, Double.parseDouble(m_r2c2.getText()));
+			transformation.setEntry(1, 2, Double.parseDouble(m_r2c3.getText()));
+			transformation.setEntry(2, 0, Double.parseDouble(m_r3c1.getText()));
+			transformation.setEntry(2, 1, Double.parseDouble(m_r3c2.getText()));
+			transformation.setEntry(2, 2, Double.parseDouble(m_r3c3.getText()));
+			System.out.println("Calling transform");
+			m_registration.transform(m_registration.m_surfP, transformation);
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
 		}
 	}
 	/**
