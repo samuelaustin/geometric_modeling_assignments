@@ -78,6 +78,7 @@ public class Registration extends PjWorkshop {
 		m_surfP = surfP;
 		m_surfQ = surfQ;
 		initMatrices(m_surfP);
+		addAllNeighbours(m_surfP);
 	}
 	
 	public void iterativeClosestPoint(boolean pointtoplane){
@@ -605,5 +606,39 @@ public class Registration extends PjWorkshop {
 		{
 			matrix.setEntry(rowIndex, i, row.getEntry(i));
 		}
+	}
+	
+	// ========================================================================================================================
+	// =====================================                                ===================================================
+	// =====================================        ASSIGNMENT 3            ===================================================
+	// =====================================                                ===================================================
+	// ========================================================================================================================
+	
+	public void iteratedAveraging(double timeStep) {
+		PdVector[] newVertices = new PdVector[m_surfP.getNumVertices()];
+		for(int i = 0; i < newVertices.length; i++){
+			newVertices[i] = PdVector.addNew(m_surfP.getVertex(i), average(timeStep, i));
+		}
+		for(int i = 0; i < newVertices.length; i++){
+			m_surfP.setVertex(i, newVertices[i]);
+		}
+		m_surfP.update(m_surfP);
+	}
+	
+	private PdVector average(double t, int index) {
+		int[] neighIndex = m_surfP.getNeighbour(index).m_data;
+		double divisor = neighIndex.length;
+		PdVector res = new PdVector(new double[]{0.0, 0.0, 0.0});
+		
+		// Calculate average of neighbours of vertex at index.
+		for(int i = 0; i < neighIndex.length; i++){
+			res.add(m_surfP.getVertex(neighIndex[i]));
+		}
+		res.multScalar(1.0/divisor);
+		
+		res.sub(m_surfP.getVertex(index));
+		res.multScalar(t);
+		
+		return res;
 	}
 }
