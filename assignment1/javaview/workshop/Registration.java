@@ -47,6 +47,7 @@ public class Registration extends PjWorkshop {
 	PnSparseMatrix G;
 	PnSparseMatrix GT;
 	PnSparseMatrix Mv;
+	PnSparseMatrix M;
 	PdMatrix X;
 
 	/** First surface to be registered. */	
@@ -512,6 +513,10 @@ public class Registration extends PjWorkshop {
 			Mv.setEntry(i, i, area);
 			faceIndex++;
 		}
+		
+		// calculate M: diagonal matrix with entry (i,i) = 1/3 of the sum of the areas of all
+		// triangles adjacent to vertex i.
+		for(int i = 0; i < )
 
 		// Calculate g-tilde.
 		X = new PdMatrix(surface.getNumVertices(), 3);
@@ -640,5 +645,35 @@ public class Registration extends PjWorkshop {
 		res.multScalar(t);
 		
 		return res;
+	}
+	
+	public void explicitMeanCurvatureFlow(double timeStep) {
+		// Reconstruct matrices.
+		initMatrices();
+		
+		// Construct L = Mv^-1*G^T*Mv*G.
+		PnSparseMatrix MvInverse = new PnSparseMatrix(Mv.getNumEntries());
+		for(int i = 0; i < Mv.getNumEntries(); i++){
+			MvInverse.setEntry(i, i, 1.0/Mv.getEntry(i, i));
+		}
+		
+		PnSparseMatrix inter1 = PnSparseMatrix.multMatrices(MvInverse, GT, null);
+		PnSparseMatrix inter2 = PnSparseMatrix.multMatrices(inter1, Mv, null);
+		PnSparseMatrix L = PnSparseMatrix.multMatrices(inter2, G, null);
+	}
+	
+	public void implicitMeanCurvatureFlow(double timeStep) {
+		// Reconstruct matrices.
+		initMatrices();
+		
+		// Construct L = Mv^-1*G^T*Mv*G.
+		PnSparseMatrix MvInverse = new PnSparseMatrix(Mv.getNumEntries());
+		for(int i = 0; i < Mv.getNumEntries(); i++){
+			MvInverse.setEntry(i, i, 1.0/Mv.getEntry(i, i));
+		}
+		
+		PnSparseMatrix inter1 = PnSparseMatrix.multMatrices(MvInverse, GT, null);
+		PnSparseMatrix inter2 = PnSparseMatrix.multMatrices(inter1, Mv, null);
+		PnSparseMatrix L = PnSparseMatrix.multMatrices(inter2, G, null);
 	}
 }
