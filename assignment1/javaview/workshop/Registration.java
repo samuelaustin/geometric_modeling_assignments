@@ -514,9 +514,16 @@ public class Registration extends PjWorkshop {
 			faceIndex++;
 		}
 		
+		M = new PnSparseMatrix(surface.getNumVertices(), surface.getNumVertices(), 1);
 		// calculate M: diagonal matrix with entry (i,i) = 1/3 of the sum of the areas of all
 		// triangles adjacent to vertex i.
-		for(int i = 0; i < )
+		for(int i = 0; i < surface.getNumElements(); i++) {
+			double area = calculateArea(surface, i)/3.0;
+			int[] vertices = surface.getElement(i).m_data;
+			M.setEntry(vertices[0], vertices[0], M.getEntry(vertices[0], vertices[0]) + area);
+			M.setEntry(vertices[1], vertices[1], M.getEntry(vertices[1], vertices[1]) + area);
+			M.setEntry(vertices[2], vertices[2], M.getEntry(vertices[2], vertices[2]) + area);
+		}
 
 		// Calculate g-tilde.
 		X = new PdMatrix(surface.getNumVertices(), 3);
@@ -650,30 +657,43 @@ public class Registration extends PjWorkshop {
 	public void explicitMeanCurvatureFlow(double timeStep) {
 		// Reconstruct matrices.
 		initMatrices();
-		
-		// Construct L = Mv^-1*G^T*Mv*G.
-		PnSparseMatrix MvInverse = new PnSparseMatrix(Mv.getNumEntries());
-		for(int i = 0; i < Mv.getNumEntries(); i++){
-			MvInverse.setEntry(i, i, 1.0/Mv.getEntry(i, i));
+				
+		// Construct L = M^-1*G^T*Mv*G.
+		PnSparseMatrix MInverse = new PnSparseMatrix(M.getNumEntries());
+		for(int i = 0; i < M.getNumEntries(); i++){
+			MInverse.setEntry(i, i, 1.0/M.getEntry(i, i));
 		}
-		
-		PnSparseMatrix inter1 = PnSparseMatrix.multMatrices(MvInverse, GT, null);
+				
+		PnSparseMatrix inter1 = PnSparseMatrix.multMatrices(MInverse, GT, null);
 		PnSparseMatrix inter2 = PnSparseMatrix.multMatrices(inter1, Mv, null);
 		PnSparseMatrix L = PnSparseMatrix.multMatrices(inter2, G, null);
+		
+		PdVector X_x = new PdVector();
+		PdVector X_y = new PdVector();
+		PdVector X_z = new PdVector();
+		for(int rowIndex = 0; rowIndex < Gx.getNumRows(); rowIndex++)
+		{
+			X_x.addEntry(X.getEntry(rowIndex,0));
+			X_y.addEntry(X.getEntry(rowIndex,1));
+			X_z.addEntry(X.getEntry(rowIndex,2));
+		}
+		
+		L.multScalar(-timeStep);
+		
+		// Compute -timeStep*L*x.
+		L_x = PnSparseMatrix.rightMultVector(L, X_x, null);
+		L_y = PnSparseMatrix.rightMultVector(L, X_y, null);
+		L_z = PnSparseMatrix.rightMultVector(L, X_z, null);
+		
+		// Replace all vectors x with x - timeStep*L*x.
 	}
 	
 	public void implicitMeanCurvatureFlow(double timeStep) {
 		// Reconstruct matrices.
 		initMatrices();
 		
-		// Construct L = Mv^-1*G^T*Mv*G.
-		PnSparseMatrix MvInverse = new PnSparseMatrix(Mv.getNumEntries());
-		for(int i = 0; i < Mv.getNumEntries(); i++){
-			MvInverse.setEntry(i, i, 1.0/Mv.getEntry(i, i));
-		}
-		
-		PnSparseMatrix inter1 = PnSparseMatrix.multMatrices(MvInverse, GT, null);
-		PnSparseMatrix inter2 = PnSparseMatrix.multMatrices(inter1, Mv, null);
-		PnSparseMatrix L = PnSparseMatrix.multMatrices(inter2, G, null);
+		// Construct S = G^T*Mv*G.
+		PnSparseMatrix interMatrix = PnSparseMatrix.multMatrices(GT, Mv, null);
+		PnSparseMatrix S = PnSparseMatrix.multMatrices(interMatrix, G, null);
 	}
 }
