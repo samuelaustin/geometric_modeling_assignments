@@ -671,8 +671,8 @@ public class Registration extends PjWorkshop {
 		PdVector X_x = new PdVector();
 		PdVector X_y = new PdVector();
 		PdVector X_z = new PdVector();
-		for(int rowIndex = 0; rowIndex < Gx.getNumRows(); rowIndex++)
-		{
+		
+		for(int rowIndex = 0; rowIndex < m_surfP.getNumVertices(); rowIndex++) {
 			X_x.addEntry(X.getEntry(rowIndex,0));
 			X_y.addEntry(X.getEntry(rowIndex,1));
 			X_z.addEntry(X.getEntry(rowIndex,2));
@@ -686,6 +686,13 @@ public class Registration extends PjWorkshop {
 		L_z = PnSparseMatrix.rightMultVector(L, X_z, null);
 		
 		// Replace all vectors x with x - timeStep*L*x.
+		for(int i = 0; i < m_surfP.getNumVertices(); i++) {
+			PdVector res = new PdVector(new double[]{X_x.getEntry(i) - L_x.getEntry(i),
+					X_y.getEntry(i) - L_y.getEntry(i),
+					X_z.getEntry(i) - L_z.getEntry(i)});
+			m_surfP.setVertex(i, res);
+		}
+		m_surfP.update(m_surfP);
 	}
 	
 	public void implicitMeanCurvatureFlow(double timeStep) {
@@ -695,5 +702,44 @@ public class Registration extends PjWorkshop {
 		// Construct S = G^T*Mv*G.
 		PnSparseMatrix interMatrix = PnSparseMatrix.multMatrices(GT, Mv, null);
 		PnSparseMatrix S = PnSparseMatrix.multMatrices(interMatrix, G, null);
+		
+		// Compute M + tS.
+		S.multScalar(timeStep);
+		S.add(M);
+		
+		// Set up X-vectors.
+		PdVector X_x = new PdVector();
+		PdVector X_y = new PdVector();
+		PdVector X_z = new PdVector();
+		
+		for(int rowIndex = 0; rowIndex < m_surfP.getNumVertices(); rowIndex++) {
+			X_x.addEntry(X.getEntry(rowIndex,0));
+			X_y.addEntry(X.getEntry(rowIndex,1));
+			X_z.addEntry(X.getEntry(rowIndex,2));
+		}
+		
+		// Set up b for Ax = b.
+		PdVector B_x = PnSparseMatrix.rightMultVector(M, X_x, null);
+		PdVector B_y = PnSparseMatrix.rightMultVector(M, X_y, null);
+		PdVector B_z = PnSparseMatrix.rightMultVector(M, X_z, null);
+				
+		PdVector x_x = new PdVector(surface.getNumVertices());
+		PdVector x_y = new PdVector(surface.getNumVertices());
+		PdVector x_z = new PdVector(surface.getNumVertices());
+				
+		// Solve system.
+		PnConjugateGradientMatrix conjGradMatrix = new PnConjugateGradientMatrix();
+		conjGradMatrix.solve(matrix, x_x, b_x);
+		conjGradMatrix.solve(matrix, x_y, b_y);
+		conjGradMatrix.solve(matrix, x_z, b_z);
+		
+		// Prepare the x for the equation Ax = b.
+		PdMatrix x = new PdMatrix(surface.getNumVertices(), 3);
+		
+		x.setColumn(0, x_x);
+		x.setColumn(1, x_y);
+		x.setColumn(2, x_z);
+		
+		replaceVertices(surface, x);
 	}
 }
