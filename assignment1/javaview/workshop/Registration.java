@@ -648,9 +648,9 @@ public class Registration extends PjWorkshop {
 			X_z.addEntry(X.getEntry(rowIndex,2));
 		}
 		
-		L.multScalar(-timeStep);
+		L.multScalar(timeStep);
 		
-		// Compute -timeStep*L*x.
+		// Compute timeStep*L*x.
 		PdVector L_x = PnSparseMatrix.rightMultVector(L, X_x, null);
 		PdVector L_y = PnSparseMatrix.rightMultVector(L, X_y, null);
 		PdVector L_z = PnSparseMatrix.rightMultVector(L, X_z, null);
