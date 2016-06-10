@@ -79,7 +79,6 @@ public class Registration extends PjWorkshop {
 		m_surfP = surfP;
 		m_surfQ = surfQ;
 		initMatrices(m_surfP);
-		addAllNeighbours(m_surfP);
 	}
 	
 	public void iterativeClosestPoint(boolean pointtoplane){
@@ -116,35 +115,6 @@ public class Registration extends PjWorkshop {
 			HashMap<PdVector, PdVector> corresponding = GetClosestPointToPointDistances(vectors, m_surfQ);
 			pointToPoint(corresponding);
 		}
-		/*
-		// Compute centroid of P and Q.
-		PdVector pCentroid = computeCentroid(corresponding.keySet());
-		PdVector qCentroid = computeCentroid(corresponding.values());
-		
-		// Compute optimal rotation and translation.
-		PdMatrix m = new PdMatrix(3);
-		for(PdVector vector : corresponding.keySet()){
-			PdMatrix a = new PdMatrix(3);
-			a.adjoint(PdVector.subNew(vector, pCentroid), PdVector.subNew(corresponding.get(vector), qCentroid));
-			m.add(a);
-		}
-		double n2 = corresponding.keySet().size();
-		PdMatrix rotation = divide(m, n2);
-		
-		// Compute SVD.
-		Array2DRowRealMatrix realmatrix = new Array2DRowRealMatrix(rotation.m_data);
-		SingularValueDecomposition svd = new SingularValueDecomposition(realmatrix);
-		
-		double[][] inter = ones(3);
-		
-		RealMatrix uvt = svd.getU().multiply(svd.getVT());
-		PdMatrix vut = new PdMatrix(svd.getV().multiply(svd.getUT()).getData());
-		inter[2][2] = PnMatrix.determinant(vut.m_data, 3);
-		RealMatrix rOptInter = svd.getV().multiply(new Array2DRowRealMatrix(inter).multiply(svd.getUT()));
-		PdMatrix rOpt = new PdMatrix(rOptInter.getData());
-		PdVector tOpt = PdVector.subNew(qCentroid, matrixMult(rOpt, pCentroid));
-		
-		rotateAndTranslate(m_surfP, rOpt, tOpt);*/
 	}
 	
 	public void pointToPlane(HashMap<PdVector, HashMap<PdVector, Integer>> corresponding, PgElementSet surface) {
@@ -654,13 +624,13 @@ public class Registration extends PjWorkshop {
 		return res;
 	}
 	
-	public void explicitMeanCurvatureFlow(double timeStep) {
+	public void explicitMeanCurvatureFlow(PgElementSet surface, double timeStep) {
 		// Reconstruct matrices.
-		initMatrices();
+		initMatrices(surface);
 				
 		// Construct L = M^-1*G^T*Mv*G.
-		PnSparseMatrix MInverse = new PnSparseMatrix(M.getNumEntries());
-		for(int i = 0; i < M.getNumEntries(); i++){
+		PnSparseMatrix MInverse = new PnSparseMatrix(M.getNumRows(), M.getNumCols());
+		for(int i = 0; i < M.getNumRows(); i++){
 			MInverse.setEntry(i, i, 1.0/M.getEntry(i, i));
 		}
 				
@@ -672,7 +642,7 @@ public class Registration extends PjWorkshop {
 		PdVector X_y = new PdVector();
 		PdVector X_z = new PdVector();
 		
-		for(int rowIndex = 0; rowIndex < m_surfP.getNumVertices(); rowIndex++) {
+		for(int rowIndex = 0; rowIndex < X.getNumRows(); rowIndex++) {
 			X_x.addEntry(X.getEntry(rowIndex,0));
 			X_y.addEntry(X.getEntry(rowIndex,1));
 			X_z.addEntry(X.getEntry(rowIndex,2));
@@ -681,9 +651,9 @@ public class Registration extends PjWorkshop {
 		L.multScalar(-timeStep);
 		
 		// Compute -timeStep*L*x.
-		L_x = PnSparseMatrix.rightMultVector(L, X_x, null);
-		L_y = PnSparseMatrix.rightMultVector(L, X_y, null);
-		L_z = PnSparseMatrix.rightMultVector(L, X_z, null);
+		PdVector L_x = PnSparseMatrix.rightMultVector(L, X_x, null);
+		PdVector L_y = PnSparseMatrix.rightMultVector(L, X_y, null);
+		PdVector L_z = PnSparseMatrix.rightMultVector(L, X_z, null);
 		
 		// Replace all vectors x with x - timeStep*L*x.
 		for(int i = 0; i < m_surfP.getNumVertices(); i++) {
@@ -695,9 +665,9 @@ public class Registration extends PjWorkshop {
 		m_surfP.update(m_surfP);
 	}
 	
-	public void implicitMeanCurvatureFlow(double timeStep) {
+	public void implicitMeanCurvatureFlow(PgElementSet surface, double timeStep) {
 		// Reconstruct matrices.
-		initMatrices();
+		initMatrices(surface);
 		
 		// Construct S = G^T*Mv*G.
 		PnSparseMatrix interMatrix = PnSparseMatrix.multMatrices(GT, Mv, null);
@@ -719,9 +689,9 @@ public class Registration extends PjWorkshop {
 		}
 		
 		// Set up b for Ax = b.
-		PdVector B_x = PnSparseMatrix.rightMultVector(M, X_x, null);
-		PdVector B_y = PnSparseMatrix.rightMultVector(M, X_y, null);
-		PdVector B_z = PnSparseMatrix.rightMultVector(M, X_z, null);
+		PdVector b_x = PnSparseMatrix.rightMultVector(M, X_x, null);
+		PdVector b_y = PnSparseMatrix.rightMultVector(M, X_y, null);
+		PdVector b_z = PnSparseMatrix.rightMultVector(M, X_z, null);
 				
 		PdVector x_x = new PdVector(surface.getNumVertices());
 		PdVector x_y = new PdVector(surface.getNumVertices());
@@ -729,9 +699,9 @@ public class Registration extends PjWorkshop {
 				
 		// Solve system.
 		PnConjugateGradientMatrix conjGradMatrix = new PnConjugateGradientMatrix();
-		conjGradMatrix.solve(matrix, x_x, b_x);
-		conjGradMatrix.solve(matrix, x_y, b_y);
-		conjGradMatrix.solve(matrix, x_z, b_z);
+		conjGradMatrix.solve(S, x_x, b_x);
+		conjGradMatrix.solve(S, x_y, b_y);
+		conjGradMatrix.solve(S, x_z, b_z);
 		
 		// Prepare the x for the equation Ax = b.
 		PdMatrix x = new PdMatrix(surface.getNumVertices(), 3);
