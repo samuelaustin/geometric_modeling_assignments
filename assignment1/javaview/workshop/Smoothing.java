@@ -1,6 +1,7 @@
 package workshop;
 
 import java.awt.Color;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
@@ -27,6 +28,8 @@ public class Smoothing extends PjWorkshop {
 	PnSparseMatrix M;
 	PdMatrix X;
 	
+	HashMap<Integer, List<Integer>> neighbours = new HashMap<Integer, List<Integer>>();
+	
 	public Smoothing() {
 		super("Smoothing");
 		init();
@@ -37,6 +40,7 @@ public class Smoothing extends PjWorkshop {
 		super.setGeometry(geom);
 		m_geom 		= (PgElementSet)super.m_geom;
 		m_geomSave 	= (PgElementSet)super.m_geomSave;
+		addAllNeighbours();
 	}
 	
 	public void init() {		
@@ -159,7 +163,7 @@ public class Smoothing extends PjWorkshop {
 
 	public void iteratedAveraging(double timeStep) {
 		int numVertices = m_geom.getNumVertices();
-
+		
 		PdVector[] newVertices = new PdVector[numVertices];
 		for(int i = 0; i < numVertices; i++){
 			newVertices[i] = PdVector.addNew(m_geom.getVertex(i), average(timeStep, i));
@@ -171,16 +175,13 @@ public class Smoothing extends PjWorkshop {
 	}
 	
 	private PdVector average(double t, int index) {
-		PiVector neighIndex = m_geom.getNeighbour(index);
-		double divisor = neighIndex.getSize();
+		List<Integer> list = neighbours.get(index);
+		double divisor = list.size();
 		PdVector res = new PdVector(new double[]{0.0, 0.0, 0.0});
 		
 		// Calculate average of neighbours of vertex at index.
-		for(int i = 0; i < neighIndex.getSize(); i++){
-			if(neighIndex.getEntry(i) < m_geom.getNumVertices())
-			{
-				res.add(m_geom.getVertex(neighIndex.getEntry(i)));
-			}	
+		for(int i = 0; i < list.size(); i++){
+			res.add(m_geom.getVertex(list.get(i)));
 		}
 		res.multScalar(1.0/divisor);
 		
@@ -214,7 +215,7 @@ public class Smoothing extends PjWorkshop {
 			X_z.addEntry(X.getEntry(rowIndex,2));
 		}
 		
-		L.multScalar(-timeStep);
+		L.multScalar(timeStep);
 		
 		// Compute -timeStep*L*x.
 		PdVector L_x = PnSparseMatrix.rightMultVector(L, X_x, null);
@@ -289,5 +290,29 @@ public class Smoothing extends PjWorkshop {
 			surface.setVertex(i, newX);
 		}
 		surface.update(surface);
+	}
+	
+	private void addAllNeighbours() {
+		int amtFaces = m_geom.getNumElements();
+		for(int i = 0; i < amtFaces; i++) {
+			int[] data = m_geom.getElement(i).m_data;
+			addNeighbour(data[0], data[1]);
+			addNeighbour(data[1], data[0]);
+			addNeighbour(data[1], data[2]);
+			addNeighbour(data[2], data[1]);
+			addNeighbour(data[2], data[0]);
+			addNeighbour(data[0], data[2]);
+		}
+	}
+	
+	private void addNeighbour(int index, int neighbour) {
+		List<Integer> list = neighbours.get(index);
+		if(list == null) {
+			list = new ArrayList<Integer>();
+		}
+		if(!list.contains(neighbour)) {
+			list.add(neighbour);
+			neighbours.put(index, list);
+		}
 	}
 }
