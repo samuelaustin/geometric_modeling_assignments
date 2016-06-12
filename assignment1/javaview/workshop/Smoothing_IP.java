@@ -48,9 +48,9 @@ public class Smoothing_IP extends PjWorkshop_IP implements ActionListener {
 		m_smooth = (Smoothing)parent;
 
 		m_methodRadioButton = new CheckboxGroup();
-		m_average = new Checkbox("Average", m_methodRadioButton, true);
-        m_explicit = new Checkbox("Explicit", m_methodRadioButton, false);
-        m_implicit = new Checkbox("Implicit", m_methodRadioButton, false);
+		m_average = new Checkbox("Iterated Averaging", m_methodRadioButton, true);
+        m_explicit = new Checkbox("Explicit Euler", m_methodRadioButton, false);
+        m_implicit = new Checkbox("Implicit Euler", m_methodRadioButton, false);
         add(m_average);
         add(m_explicit);
         add(m_implicit);
